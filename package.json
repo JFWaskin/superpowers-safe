@@ -1,7 +1,7 @@
 {
-  "name": "superpowers",
-  "version": "6.2.0",
-  "description": "Superpowers skills and runtime bootstrap for coding agents",
+  "name": "superpowers-safe",
+  "version": "6.3.0",
+  "description": "Superpowers skills and runtime bootstrap for coding agents, with a mandatory safety preflight before any skill runs",
   "type": "module",
   "main": ".opencode/plugins/superpowers.js",
   "keywords": [
@@ -10,8 +10,16 @@
     "tdd",
     "debugging",
     "collaboration",
-    "workflow"
+    "workflow",
+    "safety",
+    "preflight"
   ],
+  "homepage": "https://github.com/JFWaskin/superpowers-safe",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JFWaskin/superpowers-safe.git"
+  },
+  "license": "MIT",
   "pi": {
     "extensions": [
       "./.pi/extensions/superpowers.ts"

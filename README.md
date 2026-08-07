@@ -1,318 +1,167 @@
-# Superpowers
+# superpowers-safe
 
-Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
+> A safety-hardened fork of [obra/superpowers](https://github.com/obra/superpowers). Same skills library, plus a **mandatory safety preflight** before any skill runs.
 
-## Table of Contents
+`superpowers-safe` keeps every skill from upstream Superpowers byte-identical and adds one thing: a `safety-check` preflight that runs **five hard gates** before any work begins. The preflight defends against destructive bash commands, runaway subagents, resource exhaustion, secret leaks, and scope creep.
 
-- [Quickstart](#quickstart)
-- [How it works](#how-it-works)
-- [Commercial Services](#commercial-services)
-- [Installation](#installation)
-  - [Claude Code](#claude-code)
-  - [Antigravity](#antigravity)
-  - [Codex App](#codex-app)
-  - [Codex CLI](#codex-cli)
-  - [Cursor](#cursor)
-  - [Factory Droid](#factory-droid)
-  - [Gemini CLI](#gemini-cli)
-  - [GitHub Copilot CLI](#github-copilot-cli)
-  - [Kimi Code](#kimi-code)
-  - [OpenCode](#opencode)
-  - [Pi](#pi)
-- [The Basic Workflow](#the-basic-workflow)
-- [Community](#community)
-- [What's Inside](#whats-inside)
-- [Philosophy](#philosophy)
-- [Contributing](#contributing)
-- [Updating](#updating)
-- [License](#license)
-- [Visual companion telemetry](#visual-companion-telemetry)
+- Upstream: [`obra/superpowers`](https://github.com/obra/superpowers) — Jesse Vincent & the Prime Radiant team, MIT
+- This fork: [`JFWaskin/superpowers-safe`](https://github.com/JFWaskin/superpowers-safe) — Jonathan F. Waskin, MIT
+- Sync: rebase from `upstream/dev` regularly (`scripts/sync-upstream.sh`)
 
-## Quickstart
+---
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Hermes Agent](#hermes-agent), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+## Why this fork exists
 
-## How it works
+Superpowers' `subagent-driven-development`, `dispatching-parallel-agents`, and `executing-plans` skills can run for hours, dispatch many subagents, and execute thousands of bash commands. That's powerful — and it's exactly when one wrong `rm -rf` or runaway `find` can wreck a machine, a git history, or a public registry.
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+`superpowers-safe` doesn't change what Superpowers teaches. It adds a gate at the front door.
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+### What the gate enforces (5 hard gates)
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
+| # | Gate | What it checks |
+|---|------|---------------|
+| 1 | **Resource budget** | Disk ≥ 2 GB free, RAM ≥ 1 GB free, load avg < 2× core count |
+| 2 | **Command risk scan** | Refuses destructive bash (`rm -rf` on system paths, `dd` to device, fork bombs, `curl \| sh`, force-push to main, publish commands, `sudo` without per-command OK) |
+| 3 | **Loop / spend limits** | Max 3 concurrent subagents, 30 min autonomous check-in, $1 / $5 / $10 spend thresholds, ralph-loop guard |
+| 4 | **Secret / PII scan** | Pre-write scan for `.env`, `*.key`, `id_rsa*`, `*.pem`, `sk-…`, `ghp_…` |
+| 5 | **Scope confirmation** | One-line plan + explicit "go" before non-trivial work |
 
-Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for your agent to work autonomously for a couple hours at a time without deviating from the plan you put together.
+The full specification is in [`docs/safety-gate.md`](docs/safety-gate.md). The skill itself is [`skills/safety-check/SKILL.md`](skills/safety-check/SKILL.md).
 
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
+### Defense in depth
 
-## Commercial Services
+The skill-level gate is the first line. The recommended second line is a `PreToolUse` hook that blocks destructive bash at the tool layer — even if the agent skips the skill. See [`docs/safety-gate.md#defense-in-depth`](docs/safety-gate.md) for the hook pattern.
 
-If you're using Superpowers in enterprise and could benefit from commercial support, additional tooling, or managed spending, please don't hesitate to drop us a line at sales@primeradiant.com.
+---
 
 ## Installation
 
-Installation differs by harness. If you use more than one, install Superpowers separately for each one.
-
-### Claude Code
-
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
-
-#### Official Marketplace
-
-- Install the plugin from Anthropic's official marketplace:
-
-  ```bash
-  /plugin install superpowers@claude-plugins-official
-  ```
-
-#### Superpowers Marketplace
-
-The Superpowers marketplace provides Superpowers and some other related plugins for Claude Code.
-
-- Register the marketplace:
-
-  ```bash
-  /plugin marketplace add obra/superpowers-marketplace
-  ```
-
-- Install the plugin from this marketplace:
-
-  ```bash
-  /plugin install superpowers@superpowers-marketplace
-  ```
-
-### Antigravity
-
-Install Superpowers as a plugin from this repository:
+### Claude Code (official marketplace)
 
 ```bash
-agy plugin install https://github.com/obra/superpowers
+# 1. Register this fork's marketplace
+/plugin marketplace add JFWaskin/superpowers-safe
+
+# 2. Install the plugin
+/plugin install superpowers-safe@JFWaskin-superpowers-safe
+
+# 3. (Optional) Disable the upstream version to avoid two skills libraries
+# /plugin disable superpowers@claude-plugins-official
 ```
 
-Antigravity runs the plugin's session-start hook, so Superpowers is active from
-the first message. Reinstall with the same command to update.
+After install, restart Claude Code so the SessionStart hook injects the `using-superpowers` content (which now includes the `<MANDATORY-SAFETY-GATE>` block) into context.
 
-### Codex App
-
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
-
-- In the Codex app, click on Plugins in the sidebar.
-- You should see `Superpowers` in the Coding section.
-- Click the `+` next to Superpowers and follow the prompts.
-
-### Codex CLI
-
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
-
-- Open the plugin search interface:
-
-  ```bash
-  /plugins
-  ```
-
-- Search for Superpowers:
-
-  ```bash
-  superpowers
-  ```
-
-- Select `Install Plugin`.
-
-### Cursor
-
-- In Cursor Agent chat, install from marketplace:
-
-  ```text
-  /add-plugin superpowers
-  ```
-
-- Or search for "superpowers" in the plugin marketplace.
-
-### Factory Droid
-
-- Register the marketplace:
-
-  ```bash
-  droid plugin marketplace add https://github.com/obra/superpowers
-  ```
-
-- Install the plugin:
-
-  ```bash
-  droid plugin install superpowers@superpowers
-  ```
-
-### Gemini CLI
-
-- Install the extension:
-
-  ```bash
-  gemini extensions install https://github.com/obra/superpowers
-  ```
-
-- Update later:
-
-  ```bash
-  gemini extensions update superpowers
-  ```
-
-### GitHub Copilot CLI
-
-- Register the marketplace:
-
-  ```bash
-  copilot plugin marketplace add obra/superpowers-marketplace
-  ```
-
-- Install the plugin:
-
-  ```bash
-  copilot plugin install superpowers@superpowers-marketplace
-  ```
-
-### Kimi Code
-
-Superpowers is available in Kimi Code's plugin marketplace.
-
-- Open Kimi Code's plugin manager:
-
-  ```text
-  /plugins
-  ```
-
-- Go to `Marketplace` > `Superpowers` and install it.
-
-- Or install directly from this repository:
-
-  ```text
-  /plugins install https://github.com/obra/superpowers
-  ```
-
-- Detailed docs: [docs/README.kimi.md](docs/README.kimi.md)
-
-### OpenCode
-
-OpenCode uses its own plugin install; install Superpowers separately even if you
-already use it in another harness.
-
-- Tell OpenCode:
-
-  ```
-  Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
-  ```
-
-- Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)
-
-### Pi
-
-Install Superpowers as a Pi package from this repository:
+### Claude Code (from URL, no marketplace)
 
 ```bash
-pi install git:github.com/obra/superpowers
+/plugin install https://github.com/JFWaskin/superpowers-safe
 ```
 
-For local development, run Pi with this checkout loaded as a temporary package:
+### Other runtimes
+
+The same plugin supports Codex, Cursor, Kimi Code, Gemini CLI, Hermes, OpenCode, and Pi. See [Cross-runtime support](#cross-runtime-support) below.
+
+---
+
+## Quickstart
+
+Once installed, every Claude Code session starts with the `safety-check` gate loaded. To use it explicitly:
+
+> "I want to refactor the auth module. Please run the safety-check first."
+
+The agent will run the 5 gates, output a `[SAFETY CLEARED]` or `[SAFETY HALTED]` block, and only then proceed.
+
+For the most common case — you want a coding task done with the full Superpowers workflow — just ask normally. The `using-superpowers` meta-skill will route through `safety-check` first, then `brainstorming` (if it's a new feature), then the appropriate implementation skills.
+
+---
+
+## Cross-runtime support
+
+This fork mirrors upstream's cross-runtime packaging. The same safety gate is honored on every runtime:
+
+| Runtime | Install |
+|---------|---------|
+| Claude Code | `/plugin install superpowers-safe@JFWaskin-superpowers-safe` |
+| Codex App | Search "superpowers-safe" in Plugins → Coding |
+| Codex CLI | `/plugins` → search `superpowers-safe` → Install |
+| Cursor | `/add-plugin superpowers-safe` |
+| Gemini CLI | `gemini extensions install https://github.com/JFWaskin/superpowers-safe` |
+| Kimi Code | Plugin marketplace (search `superpowers-safe`) |
+| OpenCode | Plugin marketplace (search `superpowers-safe`) |
+| Pi | Marketplace install (search `superpowers-safe`) |
+| Hermes | `agy plugin install https://github.com/JFWaskin/superpowers-safe` |
+| GitHub Copilot CLI | `copilot plugin marketplace add JFWaskin/superpowers-safe && copilot plugin install superpowers-safe@JFWaskin-superpowers-safe` |
+| Factory Droid | `droid plugin marketplace add https://github.com/JFWaskin/superpowers-safe && droid plugin install superpowers-safe@JFWaskin` |
+
+The `safety-check` gate is enforced via the `<MANDATORY-SAFETY-GATE>` block in `skills/using-superpowers/SKILL.md`, which is loaded by every runtime that auto-discovers skills in `skills/`.
+
+---
+
+## Repository layout
+
+```
+superpowers-safe/
+├── .claude-plugin/        Claude Code plugin + marketplace manifests
+├── .codex-plugin/         Codex plugin manifest
+├── .cursor-plugin/        Cursor plugin manifest
+├── .kimi-plugin/          Kimi Code plugin manifest
+├── .hermes-plugin/        Hermes plugin manifest
+├── gemini-extension.json  Gemini CLI extension manifest
+├── package.json           OpenCode / Pi package manifest
+├── skills/                All Superpowers skills (byte-identical to upstream + 1 new: safety-check)
+│   ├── using-superpowers/ (modified: +<MANDATORY-SAFETY-GATE> block)
+│   ├── safety-check/      (NEW: the preflight skill)
+│   └── ...                (12 other skills, synced from upstream)
+├── hooks/                 SessionStart hook (auto-injects using-superpowers into context)
+├── tests/                 Plugin-infrastructure tests (shell-based, run via `run-skill-tests.sh`)
+├── scripts/               Sync + version-bump scripts
+├── docs/                  Safety-gate spec, sync guide, eval protocol
+├── CLAUDE.md              Fork identity + contributor rules
+├── AGENTS.md              Symlink to CLAUDE.md
+├── GEMINI.md              Gemini entry point
+├── CHANGELOG.md           Versioned change log
+├── CONTRIBUTING.md        PR rules
+└── LICENSE                MIT (inherited from upstream)
+```
+
+---
+
+## How to contribute to this fork
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the in-repo contributor rules in [`CLAUDE.md`](CLAUDE.md). Short version:
+
+1. Sync from `upstream/dev` first
+2. Branch off `dev`, target `dev` in the PR
+3. Safety-gate changes need RED-GREEN-REFACTOR evidence (3+ pressure scenarios)
+4. Skill content changes need an upstream issue/PR reference
+5. Identify model, harness, version, and plugins in the PR
+
+---
+
+## How to sync from upstream
 
 ```bash
-pi -e /path/to/superpowers
+# In your local work tree
+./scripts/sync-upstream.sh
 ```
 
-The Pi package loads the Superpowers skills and a small extension that injects the `using-superpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required. Subagent and task-list tools remain optional Pi companion packages.
+This rebases `dev` onto `upstream/dev`, fast-forwarding when possible and pausing for conflict resolution when not. The script refuses to push if there are uncommitted changes or if the local `dev` is not a clean superset of `upstream/dev`.
 
-### Hermes Agent
+See [`docs/sync-upstream.md`](docs/sync-upstream.md) for the manual procedure and conflict-resolution policy.
 
-Install Superpowers as a Hermes plugin from this repository:
-
-```bash
-hermes plugins install obra/superpowers --enable
-```
-
-Restart any active Hermes sessions after installing. Note: Hermes has no
-post-compaction hook, so a very long session that compacts over its first
-turn loses the bootstrap — start a fresh session if skills stop triggering.
-
-## The Basic Workflow
-
-1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
-
-2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
-
-3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
-
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
-
-5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
-
-6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
-
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up worktree.
-
-**The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
-
-## Community
-
-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
-
-- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Superpowers
-- **Issues**: https://github.com/obra/superpowers/issues
-- **Release announcements**: [Sign up](https://primeradiant.com/superpowers/) to get notified about new versions
-
-## What's Inside
-
-### Skills Library
-
-**Testing**
-- **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
-
-**Debugging**
-- **systematic-debugging** - 4-phase root cause process (includes root-cause-tracing, defense-in-depth, condition-based-waiting techniques)
-- **verification-before-completion** - Ensure it's actually fixed
-
-**Collaboration** 
-- **brainstorming** - Socratic design refinement
-- **writing-plans** - Detailed implementation plans
-- **executing-plans** - Batch execution with checkpoints
-- **dispatching-parallel-agents** - Concurrent subagent workflows
-- **requesting-code-review** - Pre-review checklist
-- **receiving-code-review** - Responding to feedback
-- **using-git-worktrees** - Parallel development branches
-- **finishing-a-development-branch** - Merge/PR decision workflow
-- **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
-
-**Meta**
-- **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
-
-## Philosophy
-
-- **Test-Driven Development** - Write tests first, always
-- **Systematic over ad-hoc** - Process over guessing
-- **Complexity reduction** - Simplicity as primary goal
-- **Evidence over claims** - Verify before declaring success
-
-Read [the original release announcement](https://blog.fsck.com/2025/10/09/superpowers/).
-
-## Contributing
-
-The general contribution process for Superpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
-
-1. Fork the repository
-2. Switch to the 'dev' branch
-3. Create a branch for your work
-4. Follow the `writing-skills` skill for creating and testing new and modified skills
-5. Submit a PR, being sure to fill in the pull request template.
-
-Skill-behavior tests use the drill eval harness from [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — see `evals/README.md` for setup. Plugin-infrastructure tests live at `tests/` and run via the relevant `run-*.sh` or `npm test`.
-
-See `skills/writing-skills/SKILL.md` for the complete guide.
-
-## Updating
-
-Superpowers updates are somewhat coding-agent dependent, but are often automatic.
+---
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT. Same as upstream. See [`LICENSE`](LICENSE).
 
-## Visual companion telemetry
+Upstream copyright: Jesse Vincent and the Superpowers contributors.
+Fork changes copyright: Jonathan F. Waskin and the `superpowers-safe` contributors.
 
-Because skills and plugins don't provide any feedback to creators, we have no idea how many of you are using Superpowers. By default, the Prime Radiant logo on brainstorming's optional visual companion feature is loaded from our website. It includes the version of Superpowers in use. It does not include any details about your project, prompt, or coding agent. We don't see your clicks or anything about what you're building. This helps us have a rough idea of how many folks are using Superpowers and which version of Superpowers they're using. It's 100% optional. To disable this, set the environment variable `SUPERPOWERS_DISABLE_TELEMETRY` to any true value. Superpowers also honors Claude Code's `DISABLE_TELEMETRY` and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` opt-outs.
+---
+
+## Acknowledgments
+
+- **Jesse Vincent** and the Prime Radiant team for [obra/superpowers](https://github.com/obra/superpowers), the underlying skills library
+- The **superpowers-evals** team for the [Quorum behavioral eval lab](https://github.com/prime-radiant-inc/superpowers-evals) that makes RED-GREEN-REFACTOR possible
+- Everyone who's contributed pressure scenarios, bug reports, and skill improvements upstream

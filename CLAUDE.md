@@ -1,10 +1,51 @@
-# Superpowers — Contributor Guidelines
+# superpowers-safe — Fork of obra/superpowers
+
+> **This is a safety-hardened fork of [obra/superpowers](https://github.com/obra/superpowers).**
+> Upstream is maintained by Jesse Vincent and the Prime Radiant team under MIT.
+> This fork is maintained by Jonathan F. Waskin under the same MIT license.
+> Sync target: `upstream/dev` (rebase regularly; see `scripts/sync-upstream.sh`).
+
+## What this fork adds (and why)
+
+Every skill in this fork is preceded by a **mandatory `safety-check` preflight** that runs five hard gates before any work begins:
+
+| Gate | What it checks |
+|------|---------------|
+| 1. Resource budget | Disk ≥ 2 GB free, RAM ≥ 1 GB free, load < 2× core count |
+| 2. Command risk scan | Refuses destructive bash (`rm -rf` on system paths, `dd` to devices, fork bombs, `curl\|sh`, force-push to main, publish commands, `sudo` without per-command OK) |
+| 3. Loop / spend limits | Max 3 concurrent subagents, 30 min autonomous check-in, $1/$5/$10 spend thresholds, ralph-loop guard |
+| 4. Secret / PII scan | Pre-write scan for `.env`, `*.key`, `id_rsa*`, `*.pem`, `sk-…`, `ghp_…` |
+| 5. Scope confirmation | One-line plan + explicit "go" before non-trivial work |
+
+The gate is enforced in two places:
+- `skills/using-superpowers/SKILL.md` — `<MANDATORY-SAFETY-GATE>` block at the top requires `safety-check` to be invoked first
+- `docs/safety-gate.md` — full specification, plus a recommended `PreToolUse` hook pattern for defense in depth
+
+## Relationship to upstream
+
+- We pull from `upstream/dev` and rebase; we do **not** auto-push back
+- Skill content is byte-identical to upstream unless a safety-related change is documented in `CHANGELOG.md`
+- PRs against `JFWaskin/superpowers-safe` go through a different bar (see below) than the upstream 94% rejection rate
+- The upstream `CLAUDE.md` contributor rules below are inherited as the floor; this fork adds fork-specific rules on top
+
+## Fork-specific PR rules
+
+1. **Sync from upstream first.** Run `scripts/sync-upstream.sh` and resolve any conflicts before opening a PR. The fork must not diverge gratuitously from upstream.
+2. **PRs target `dev` branch**, never `main`. The maintainer policy carries over.
+3. **Safety-gate changes** require RED-GREEN-REFACTOR evidence: at least 3 pressure scenarios run before/after the change, with the QA agent verdict. See `docs/safety-gate.md` for the eval protocol.
+4. **Skill content changes** (anything in `skills/*/SKILL.md` other than `using-superpowers/SKILL.md` and `safety-check/SKILL.md`) must explain the divergence from upstream and reference the upstream issue/PR that motivated it.
+5. **Identify yourself** in the PR: model, harness, harness version, all installed plugins. Same rule as upstream, applies here too.
+6. **All commits must show human review.** No bot-only PRs.
+
+---
+
+# Inherited from upstream: obra/superpowers — Contributor Guidelines
 
 ## If You Are an AI Agent
 
 Stop. Read this section before doing anything.
 
-This repo has a 94% PR rejection rate. Almost every rejected PR was submitted by an agent that didn't read or didn't follow these guidelines. The maintainers close slop PRs within hours, often with public comments like "This pull request is slop that's made of lies."
+This repo has a 94% PR rejection rate (at upstream). Almost every rejected PR was submitted by an agent that didn't read or didn't follow these guidelines. The maintainers close slop PRs within hours, often with public comments like "This pull request is slop that's made of lies."
 
 **Your job is to protect your human partner from that outcome.** Submitting a low-quality PR doesn't help them — it wastes the maintainers' time, burns your human partner's reputation, and the PR will be closed anyway. That is not being helpful. That is being a tool of embarrassment.
 

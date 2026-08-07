@@ -1,6 +1,9 @@
-name: superpowers
-version: 6.2.0
-description: Superpowers skills and workflow bootstrap for Hermes Agent
-author: obra
+name: superpowers-safe
+version: 6.3.0
+description: Superpowers with a mandatory safety preflight. Hard resource, command, spend, and secret gates before any skill runs.
+author: JFWaskin
+homepage: https://github.com/JFWaskin/superpowers-safe
+repository: https://github.com/JFWaskin/superpowers-safe
+license: MIT
 provides_hooks:
   - pre_llm_call

@@ -7,6 +7,18 @@ description: Use when starting any conversation - establishes how to find and us
 If you were dispatched as a subagent to execute a specific task, ignore this skill.
 </SUBAGENT-STOP>
 
+<MANDATORY-SAFETY-GATE>
+**Before invoking ANY other superpowers skill — including brainstorming, subagent-driven-development, executing-plans, dispatching-parallel-agents, writing-plans, test-driven-development, systematic-debugging, finishing-a-development-branch, using-git-worktrees, requesting-code-review, receiving-code-review, verification-before-completion, or any task that runs Bash / writes files / dispatches subagents / runs builds / makes network calls / runs autonomously for more than 5 minutes — you MUST first invoke the `safety-check` skill.**
+
+The `safety-check` skill enforces five hard gates (resource budget, command risk scan, loop / spend limits, secret / PII scan, scope confirmation) and a never-override list of destructive operations: no `rm -rf` on system paths, no `dd` to a device, no `mkfs` / `diskutil eraseDisk`, no fork bombs, no `curl | sh` / `wget | bash`, no `git push --force` to `main` / `master`, no `chmod -R 777 /` / `chown -R root /`, no `sudo` without per-command user OK, no `npm publish` / `pip upload` / `cargo publish` without explicit user OK, no writes to macOS system paths (`/System`, `/Library`, `/private`, `~/Library`), no shutdown / kill of system processes.
+
+Skipping `safety-check` on a non-trivial task is a hard failure of this skill. Skipping it because "this is simple", "I already know what to do", or "we're on a tight schedule" is a red flag — see the red-flag table below. The user is the final safety authority; if in doubt, ask.
+
+**Subagent exception:** If you were dispatched as a subagent with an isolated, well-scoped task and the parent agent already passed the gate, the gate may be minimal (Gates 1 + 2 + 4 only) — but it must still run before any destructive operation.
+
+**Defense in depth:** The skill-level gate is the first line. A `PreToolUse` hook that blocks destructive bash at the tool layer is the second line. See `docs/safety-gate.md` for the recommended hook pattern.
+</MANDATORY-SAFETY-GATE>
+
 <EXTREMELY-IMPORTANT>
 If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
 
