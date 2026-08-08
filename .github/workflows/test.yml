@@ -83,10 +83,9 @@ jobs:
     name: Claude skill discovery (optional, requires ANTHROPIC_API_KEY secret)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && secrets.ANTHROPIC_API_KEY }}
-    # Skipped if ANTHROPIC_API_KEY is not configured (empty string is falsy).
-    # Most PRs skip this job. To enable: Settings → Secrets and variables →
-    # Actions → New repository secret, name=ANTHROPIC_API_KEY, value=sk-ant-...
+    # NOTE: This job always runs on dev pushes. It will fail (cleanly) if
+    # ANTHROPIC_API_KEY is not configured as a repo secret. The static job
+    # is the real gate; this is a best-effort smoke test.
 
     steps:
       - name: Check out
