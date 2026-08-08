@@ -83,15 +83,31 @@ jobs:
     name: Claude skill discovery (optional, requires ANTHROPIC_API_KEY secret)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # NOTE: This job always runs on dev pushes. It will fail (cleanly) if
-    # ANTHROPIC_API_KEY is not configured as a repo secret. The static job
-    # is the real gate; this is a best-effort smoke test.
+    # Skips cleanly when ANTHROPIC_API_KEY is not set. The job uses a
+    # step-output gate (not `if: ... && secrets.X`, which causes the
+    # workflow to fail at parse time when the secret is missing).
+    # To enable: Settings → Secrets and variables → Actions → New
+    # repository secret, name=ANTHROPIC_API_KEY, value=sk-ant-...
 
     steps:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Detect ANTHROPIC_API_KEY
+        id: check-secret
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "ANTHROPIC_API_KEY is set; will run Claude discovery"
+          else
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "ANTHROPIC_API_KEY is not set; skipping Claude discovery (static job is the real gate)"
+          fi
+
       - name: Install claude CLI
+        if: steps.check-secret.outputs.skip != 'true'
         # `| bash` (not `| sh`) because Ubuntu's /bin/sh is dash, which
         # cannot parse the bash-specific syntax in install.sh line 9+
         run: |
@@ -99,7 +115,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Run safety-check skill test (with Claude)
+        if: steps.check-secret.outputs.skip != 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: bash tests/claude-code/test-safety-check.sh
-        continue-on-error: false
