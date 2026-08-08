@@ -5,7 +5,7 @@
 `superpowers-safe` keeps every skill from upstream Superpowers byte-identical and adds one thing: a `safety-check` preflight that runs **five hard gates** before any work begins. The preflight defends against destructive bash commands, runaway subagents, resource exhaustion, secret leaks, and scope creep.
 
 - Upstream: [`obra/superpowers`](https://github.com/obra/superpowers) — Jesse Vincent & the Prime Radiant team, MIT
-- This fork: [`JFWaskin/superpowers-safe`](https://github.com/JFWaskin/superpowers-safe) — Jonathan F. Waskin, MIT
+- This fork: [`JFWaskin/superpowers-safe`](https://github.com/JFWaskin/superpowers-safe) — Jonathan F. Waskin, Huaqiao University (HQU)
 - Sync: rebase from `upstream/dev` regularly (`scripts/sync-upstream.sh`)
 
 ---
