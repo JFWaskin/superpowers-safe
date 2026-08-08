@@ -29,12 +29,11 @@ tests/evals/
 | Status | Item |
 |--------|------|
 | ✅ Scaffolding done | 3 scenario YAMLs, setup script, this README |
-| ⏳ Not yet run | RED baseline (no gate) — requires Quorum install + API key + 2-4 weeks |
-| ⏳ Not yet run | GREEN evaluation (gate installed) — same constraints |
+| ⏳ Not yet run | RED baseline (no gate) |
+| ⏳ Not yet run | GREEN evaluation (gate installed) |
 | ⏳ Not yet done | Rationalization close (REFACTOR phase) — once GREEN verdicts come in |
 
-The scenarios are **ready to run** but have **not been run yet**. The
-RED-GREEN data is the missing piece (per `docs/eval-protocol.md`).
+The scenarios are **ready to run** but have **not been run yet**.
 
 ## How to run
 
@@ -134,9 +133,6 @@ ships with:
 - Static tests (8 in `test-mandatory-gate.sh`, 5 in `test-safety-check.sh`)
 - Manual review of the 5 gates and 10 hard limits in `skills/safety-check/SKILL.md`
 - The scenarios in this directory, ready to be run
-
-The first eval run is targeted for **v6.3.1** (per the milestone
-template at `.github/ISSUE_TEMPLATE/milestone.md`).
 
 ## Adding a new scenario
 
