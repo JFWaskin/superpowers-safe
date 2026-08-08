@@ -1,0 +1,45 @@
+# CODEOWNERS for superpowers-safe
+#
+# GitHub uses this file to determine who must review a PR before merge.
+# When a PR changes a file matching a pattern below, the listed owners
+# are automatically requested as reviewers.
+#
+# See https://docs.github.com/en/repositories/creating-and-managing-repositories/about-code-owners
+#
+# Order matters: later patterns override earlier ones for the same path.
+# Put more specific paths last.
+
+# Default owner for everything
+* @JFWaskin
+
+# Safety-critical files — require owner review
+# Any change to these files is a safety-gate change and must follow the
+# eval protocol in docs/eval-protocol.md before merge.
+/skills/safety-check/         @JFWaskin
+/skills/using-superpowers/   @JFWaskin
+/scripts/safety-guard.py     @JFWaskin
+/docs/THREAT-MODEL.md        @JFWaskin
+/docs/safety-gate.md         @JFWaskin
+/docs/rigor-checklist.md     @JFWaskin
+/docs/eval-protocol.md       @JFWaskin
+/SECURITY.md                 @JFWaskin
+/tests/evals/                @JFWaskin
+/tests/claude-code/test-safety-check.sh   @JFWaskin
+/tests/claude-code/test-mandatory-gate.sh @JFWaskin
+
+# CI workflows — owner review for any infra change
+/.github/workflows/          @JFWaskin
+/.github/CODEOWNERS          @JFWaskin
+
+# Cross-runtime manifests — owner review for any packaging change
+/.claude-plugin/             @JFWaskin
+/.codex-plugin/              @JFWaskin
+/.cursor-plugin/             @JFWaskin
+/.kimi-plugin/               @JFWaskin
+/.hermes-plugin/             @JFWaskin
+/.opencode/                  @JFWaskin
+/.pi/                        @JFWaskin
+/.agents/                    @JFWaskin
+/.codex-plugin-sync/         @JFWaskin
+/gemini-extension.json       @JFWaskin
+/package.json                @JFWaskin

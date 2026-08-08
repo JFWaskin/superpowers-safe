@@ -10,6 +10,8 @@
 | [`safety-gate.md`](safety-gate.md) | Engineering spec for the 5 hard gates and the never-override limits. Companion to `skills/safety-check/SKILL.md`. |
 | [`THREAT-MODEL.md`](THREAT-MODEL.md) | What the gate defends against, what it does NOT defend against, assumptions, failure modes, residual risk. **Start here for threat-model questions.** |
 | [`rigor-checklist.md`](rigor-checklist.md) | What's been done to demonstrate engineering rigor (THREAT-MODEL, CI lanes, eval scaffolding), what's planned, what was intentionally scoped out. |
+| [`benchmarks.md`](benchmarks.md) | Measured overhead of the safety gate (~265ms/session + ~26ms/Bash call). |
+| [`compatibility.md`](compatibility.md) | Per-runtime test status — which runtimes we've actually installed/loaded vs only manifest-validated. |
 | [`sync-upstream.md`](sync-upstream.md) | How to rebase `dev` from `obra/superpowers`, what conflicts to expect, and the conflict-resolution policy. |
 | [`eval-protocol.md`](eval-protocol.md) | RED-GREEN-REFACTOR protocol for safety-gate changes — when it applies, what evidence is required, and the pressure-scenario format. |
 | [`testing.md`](testing.md) | How the two test layers work: `tests/` (plugin code) and `evals/` (real LLM sessions). |

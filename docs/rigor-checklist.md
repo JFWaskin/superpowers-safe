@@ -17,7 +17,7 @@
 
 | Item | Status | Evidence |
 |------|--------|----------|
-| 1.1 RED-GREEN eval scenarios | 🟡 | 3 scenarios scaffolded in `tests/evals/scenarios/`; RED/GREEN runs not yet performed (requires 2-4 weeks + ~$30-50 API cost) |
+| 1.1 RED-GREEN eval scenarios | 🟡 | 3 scenarios scaffolded in `tests/evals/scenarios/`; RED/GREEN runs not yet performed |
 | 1.2 THREAT-MODEL.md | ✅ | `docs/THREAT-MODEL.md` (339 lines). Explicit in-scope, out-of-scope, assumptions, failure modes, residual risk |
 | 1.3 Per-runtime CI lanes | ✅ | `.github/workflows/codex-smoke.yml`, `opencode-smoke.yml`, `kimi-smoke.yml` |
 
@@ -34,15 +34,45 @@
    `prime-radiant-inc/superpowers-evals` may have a different schema.
    Marked as a known issue; needs verification when scenarios are run.
 
-## Tier 2 — Quick wins (planned)
+## Tier 2 — Quick wins (shipped 2026-08-08)
 
-| Item | Effort | Signal |
-|------|--------|--------|
-| 2.1 `SECURITY.md` | Done early (see above) | — |
-| 2.2 Branch protection on `dev` | 5 min via GitHub UI | High |
-| 2.3 `CODEOWNERS` | 10 min | Medium |
-| 2.4 Performance benchmark (gate overhead) | 4 hours | High |
-| 2.5 Compatibility matrix | 2 hours | Medium |
+| Item | Status | Evidence |
+|------|--------|----------|
+| 2.1 `SECURITY.md` | ✅ Shipped (Tier 1) | `SECURITY.md` |
+| 2.2 Branch protection on `dev` | ✅ Shipped | `gh api repos/.../branches/dev/protection` returns the configured policy: 1 review required, dismiss stale, linear history, no force-push, no deletions |
+| 2.3 `CODEOWNERS` | ✅ Shipped | `.github/CODEOWNERS` covers safety-critical files, CI workflows, all 7 cross-runtime manifests |
+| 2.4 Performance benchmark | ✅ Shipped | `scripts/bench-gate.sh` + `docs/benchmarks.md`. **Measured: ~265ms one-time per session + ~26ms per Bash call** (Apple Silicon, 3 iterations). |
+| 2.5 Compatibility matrix | ✅ Shipped | `docs/compatibility.md`. **2 runtimes end-to-end tested (Claude Code, Gemini CLI); 9 manifest-validated; 4 not supported.** Honest about what we don't know. |
+
+### Issues found and fixed during Tier 2
+
+1. **gh api -f sends values as strings**; the branch-protection
+   endpoint requires typed values → switched to `--input` with a JSON
+   body file. First 3 attempts returned 422 ("not an object" /
+   "not a boolean" / "not a null"); the JSON body fixed it.
+2. **bench-gate.sh f-string had a syntax error** (`{expr):.0f}`
+   instead of `{expr:.0f}`) → rewrote with a clear structure; the
+   `Sum: ...` line now uses Python-side arithmetic instead of nested
+   f-strings.
+3. **write tool's "File has not been read yet" guard** blocked the
+   initial write of `bench-gate.sh` → rewrote (the file didn't exist
+   yet, so the guard was overly conservative).
+4. **shellcheck SC2155 warning** in `bench-gate.sh` (declare-and-assign
+   separately to avoid masking return values) → fixed by splitting
+   the line.
+
+### Tier 2 net effect
+
+- **Maintainer eyeball cost**: 5 minutes to read the 4 new artifacts
+  (CODEOWNERS, benchmarks, compatibility, branch-protection API
+  response)
+- **Code-review cost**: a maintainer reading a PR that touches
+  safety-critical files now gets auto-routed to the right reviewer
+  via CODEOWNERS, instead of having to figure out who to ping
+- **Performance claim is now backed by numbers**, not "I tried it
+  and it felt fast"
+- **Compatibility is honest**: not "supports all runtimes" but
+  "tested on 2, validated on 9 more"
 
 ## Tier 3 — Long-term investments (planned)
 
@@ -72,7 +102,7 @@ When posting in `obra/superpowers#2111` or `obra/superpowers-marketplace#69`,
 the rigor checklist is the proof-of-work. Suggested one-liner:
 
 > "Added a THREAT-MODEL.md and 3 per-runtime CI lanes. Eval scenarios
-> are scaffolded (3 ready to run); RED-GREEN data is the next milestone."
+> are scaffolded (3 ready to run)."
 
 ## What still gaps us against upstream's bar
 
@@ -81,14 +111,11 @@ The upstream `CLAUDE.md` is explicit:
 > "If you modify skill content: ... Run adversarial pressure testing
 > across multiple sessions. Show before/after eval results in your PR."
 
-We have **scenario scaffolding** but **no actual RED-GREEN data**. Until
-someone runs the 3 scenarios (or more) through Quorum, this is a gap.
-The eval is the biggest remaining piece.
+We have **scenario scaffolding** but **no actual RED-GREEN data**. The
+3 scenarios in `tests/evals/scenarios/` are ready to run; running them
+through Quorum is the missing piece.
 
-## Owner + timeline
+## Owner
 
 - Owner: Jonathan F. Waskin (with Claude as drafting partner)
 - Tier 1 shipped: 2026-08-08
-- Tier 2 ETA: same session, 1-2 hours total
-- Tier 3 ETA: rolling, opportunistic
-- Eval first run ETA: 2-4 weeks (depends on API cost budget)
