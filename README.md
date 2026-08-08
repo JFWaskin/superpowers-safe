@@ -51,6 +51,8 @@ The skill-level gate is the first line. The recommended second line is a `PreToo
 
 After install, restart Claude Code so the SessionStart hook injects the `using-superpowers` content (which now includes the `<MANDATORY-SAFETY-GATE>` block) into context.
 
+> **Have an agent help you install?** Paste the one-liner in [`docs/help-me-install.md`](docs/help-me-install.md) into any agent (Claude Code, Codex, Cursor, Gemini, Kimi, OpenCode, Pi, Hermes, Copilot, Factory Droid). The agent will detect its runtime, disable the upstream, and run the right install command.
+
 ### Claude Code (from URL, no marketplace)
 
 ```bash
@@ -159,6 +161,7 @@ All docs are indexed in [`docs/INDEX.md`](docs/INDEX.md). Highlights:
 - [`docs/eval-protocol.md`](docs/eval-protocol.md) — RED-GREEN-REFACTOR protocol for gate changes
 - [`docs/sync-upstream.md`](docs/sync-upstream.md) — rebase-from-upstream procedure
 - [`docs/porting-to-a-new-harness.md`](docs/porting-to-a-new-harness.md) — how to add a new AI harness
+- [`docs/help-me-install.md`](docs/help-me-install.md) — copy-pasteable prompt that lets any agent install the fork
 - [`docs/testing.md`](docs/testing.md) — `tests/` (plugin code) vs `evals/` (LLM sessions)
 
 ---

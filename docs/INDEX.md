@@ -11,6 +11,7 @@
 | [`sync-upstream.md`](sync-upstream.md) | How to rebase `dev` from `obra/superpowers`, what conflicts to expect, and the conflict-resolution policy. |
 | [`eval-protocol.md`](eval-protocol.md) | RED-GREEN-REFACTOR protocol for safety-gate changes — when it applies, what evidence is required, and the pressure-scenario format. |
 | [`testing.md`](testing.md) | How the two test layers work: `tests/` (plugin code) and `evals/` (real LLM sessions). |
+| [`help-me-install.md`](help-me-install.md) | Copy-pasteable prompt for any agent — paste it in, and the agent detects its runtime, disables the upstream, and runs the right install command. |
 | [`README.kimi.md`](README.kimi.md) | Kimi-Code-specific install and tool-mapping notes. |
 | [`README.opencode.md`](README.opencode.md) | OpenCode-specific install notes (symlink migration, plugin cache). |
 | `windows/` | Windows installer notes (inherited from upstream). |
