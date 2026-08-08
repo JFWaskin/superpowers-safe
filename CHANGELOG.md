@@ -6,6 +6,28 @@ is tracked separately; see [obra/superpowers Releases](https://github.com/obra/s
 
 ---
 
+## [Unreleased] — Tier 1 rigor pass (2026-08-08)
+
+See [`docs/rigor-checklist.md`](docs/rigor-checklist.md) for the full tracking document.
+
+### Added
+
+- **`docs/THREAT-MODEL.md`** — explicit in-scope, out-of-scope, assumptions, failure modes, residual risk. The honest "what this gate does NOT defend against" answer that reviewers look for.
+- **`SECURITY.md`** — responsible disclosure policy (response timeline, scope, coordinated disclosure). Required cross-reference from THREAT-MODEL.
+- **Per-runtime CI lanes** — `.github/workflows/codex-smoke.yml`, `opencode-smoke.yml`, `kimi-smoke.yml`. Each validates the runtime-specific manifest + runs the fork-agnostic `test-mandatory-gate.sh`. Codex lane has an optional install job (placeholder for when the CLI ships a non-interactive install).
+- **`tests/evals/`** — 3 fully-formed pressure scenarios (rm-rf-outside-cwd, sudo-without-ok, publish-without-ok) + `tests/evals/README.md` (RED-GREEN operational guide) + `tests/evals/quorum-setup.sh` (Quorum install helper) + `tests/evals/.gitignore`. Scenarios are scaffolded but not run; RED-GREEN data is the next milestone.
+- **`docs/rigor-checklist.md`** — tracks what was done, what is planned (Tier 2/3), what is intentionally out of scope.
+
+### Changed
+
+- **`docs/INDEX.md`** — updated to reference the new docs and the `tests/evals/` scenarios directory; added "Where to go next" routing for evaluators (THREAT-MODEL §7 is the "is this for you?" answer).
+
+### Not done in this release
+
+- Eval RED-GREEN data (requires 2-4 weeks + ~$30-50 API cost via Quorum). This is the biggest remaining rigor gap per upstream's `CLAUDE.md` bar.
+
+---
+
 ## [6.3.0] — 2026-08-07
 
 ### Added
