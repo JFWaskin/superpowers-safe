@@ -151,6 +151,18 @@ See [`docs/sync-upstream.md`](docs/sync-upstream.md) for the manual procedure an
 
 ---
 
+## Documentation
+
+All docs are indexed in [`docs/INDEX.md`](docs/INDEX.md). Highlights:
+
+- [`docs/safety-gate.md`](docs/safety-gate.md) — the 5 hard gates and never-override limits
+- [`docs/eval-protocol.md`](docs/eval-protocol.md) — RED-GREEN-REFACTOR protocol for gate changes
+- [`docs/sync-upstream.md`](docs/sync-upstream.md) — rebase-from-upstream procedure
+- [`docs/porting-to-a-new-harness.md`](docs/porting-to-a-new-harness.md) — how to add a new AI harness
+- [`docs/testing.md`](docs/testing.md) — `tests/` (plugin code) vs `evals/` (LLM sessions)
+
+---
+
 ## License
 
 MIT. Same as upstream. See [`LICENSE`](LICENSE).

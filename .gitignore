@@ -17,3 +17,9 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+
+# Local install backups — created by sub-agent when swapping
+# superpowers@claude-plugins-official -> superpowers-safe in the user's
+# local Claude Code config. These are for one-shot rollback and should
+# not be committed.
+.install-backups/

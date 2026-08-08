@@ -44,7 +44,7 @@ for arg in "$@"; do
             UPSTREAM_BRANCH="${arg#--upstream-branch=}"
             ;;
         -h|--help)
-            sed -n '2,20p' "$0"
+            sed -n '2,17p' "$0"
             exit 0
             ;;
         -*)
