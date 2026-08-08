@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -80,19 +80,24 @@ jobs:
           echo "Safety gate wiring verified"
 
   claude-discovery:
-    name: Claude skill discovery (optional, requires secret)
+    name: Claude skill discovery (optional, requires ANTHROPIC_API_KEY secret)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
-    # Only runs on dev pushes with the secret available. Most PRs skip this.
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && secrets.ANTHROPIC_API_KEY != '' }}
+    # Skipped if ANTHROPIC_API_KEY is not configured in repo settings. Most
+    # PRs skip this job (they don't push to dev and don't have the secret).
+    # To enable: Settings → Secrets and variables → Actions → New repository
+    # secret, name=ANTHROPIC_API_KEY, value=sk-ant-...
 
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install claude CLI
+        # `| bash` (not `| sh`) because Ubuntu's /bin/sh is dash, which
+        # cannot parse the bash-specific syntax in install.sh line 9+
         run: |
-          curl -fsSL https://claude.ai/install.sh | sh
+          curl -fsSL https://claude.ai/install.sh | bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Run safety-check skill test (with Claude)
