@@ -1,0 +1,63 @@
+name: Codex smoke
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codex-manifest:
+    name: Codex manifest + static tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run mandatory-gate test (fork-agnostic)
+        run: bash tests/claude-code/test-mandatory-gate.sh
+      - name: Validate Codex manifest
+        run: |
+          python3 -c "import json,sys; d=json.load(open('.codex-plugin/plugin.json')); assert d['name']=='superpowers-safe' and d['version']=='6.3.0', d; print('OK codex manifest:', d['name'], d['version'])"
+      - name: Verify Codex manifest fields
+        run: |
+          python3 -c "
+          import json
+          d=json.load(open('.codex-plugin/plugin.json'))
+          required=['name','version','description','author','homepage','repository','license','keywords','skills','interface']
+          missing=[k for k in required if k not in d]
+          assert not missing, f'missing fields: {missing}'
+          assert d['interface'].get('displayName')=='Superpowers (Safe)', d['interface'].get('displayName')
+          print('OK all required Codex fields present; displayName=' + d['interface']['displayName'])
+          "
+
+  codex-install-optional:
+    name: Codex install (optional, no-op until CLI is non-interactive)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # This job is a placeholder for when the Codex team ships a
+    # non-interactive install path. Until then, it always no-ops.
+    # Triggers only on dev pushes (matches the claude-discovery pattern).
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect Codex CLI
+        id: detect
+        run: |
+          if command -v codex >/dev/null 2>&1; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Codex CLI not installed in this runner; integration test is a no-op"
+          fi
+      - name: Codex integration test (when CLI is available)
+        if: steps.detect.outputs.available == 'true'
+        run: |
+          codex --version || echo "codex not runnable in CI; skipping"
+          echo "OK: codex manifest validation already passed in codex-manifest job"

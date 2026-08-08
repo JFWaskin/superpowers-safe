@@ -1,0 +1,46 @@
+name: Kimi smoke
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kimi-manifest:
+    name: Kimi manifest + static tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run mandatory-gate test (fork-agnostic)
+        run: bash tests/claude-code/test-mandatory-gate.sh
+      - name: Validate Kimi manifest
+        run: |
+          python3 -c "import json; d=json.load(open('.kimi-plugin/plugin.json')); assert d['name']=='superpowers-safe' and d['version']=='6.3.0', d; print('OK kimi manifest:', d['name'], d['version'])"
+      - name: Verify Kimi manifest fields
+        run: |
+          python3 -c "
+          import json
+          d=json.load(open('.kimi-plugin/plugin.json'))
+          required=['name','version','description','author','homepage','repository','license','keywords','skills','sessionStart','skillInstructions','interface']
+          missing=[k for k in required if k not in d]
+          assert not missing, f'missing fields: {missing}'
+          assert d['sessionStart'].get('skill')=='using-superpowers', d['sessionStart']
+          assert 'safety-check' in d.get('skillInstructions',''), 'skillInstructions must mention safety-check'
+          print('OK all required Kimi fields present')
+          print('OK sessionStart.skill: ' + d['sessionStart']['skill'])
+          print('OK safety-check referenced in skillInstructions')
+          "
+      - name: Verify safety-check skill referenced
+        run: |
+          grep -q 'safety-check' .kimi-plugin/plugin.json
+          test -f skills/safety-check/SKILL.md
+          echo "OK: Kimi plugin correctly references the safety-check skill"

@@ -1,0 +1,45 @@
+name: OpenCode smoke
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  opencode-manifest:
+    name: OpenCode manifest + static tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run mandatory-gate test (fork-agnostic)
+        run: bash tests/claude-code/test-mandatory-gate.sh
+      - name: Validate OpenCode manifest
+        run: |
+          python3 -c "import json; d=json.load(open('package.json')); assert d['name']=='superpowers-safe' and d['version']=='6.3.0', d; print('OK opencode manifest (package.json):', d['name'], d['version'])"
+      - name: Verify OpenCode pi extensions
+        run: |
+          python3 -c "
+          import json
+          d=json.load(open('package.json'))
+          pi=d.get('pi',{})
+          exts=pi.get('extensions',[])
+          skills=pi.get('skills',[])
+          assert any('superpowers' in e for e in exts), f'no superpowers extension: {exts}'
+          assert any('skills' in s for s in skills), f'no skills path: {skills}'
+          print('OK OpenCode pi.extensions:', exts)
+          print('OK OpenCode pi.skills:', skills)
+          "
+      - name: Verify safety-check skill reachable
+        run: |
+          test -f skills/safety-check/SKILL.md
+          grep -q '^name: safety-check$' skills/safety-check/SKILL.md
+          echo "OK: safety-check skill discoverable from OpenCode plugin layout"
