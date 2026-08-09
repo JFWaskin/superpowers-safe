@@ -1,3 +1,11 @@
-# These are supported funding model platforms
+# These are supported funding model platforms.
+#
+# The original fork had `github: [obra]` here, which was a leftover from
+# the upstream. This fork is maintained by JFWaskin. If/when a sponsorship
+# path is set up, add it below (e.g. `github: [JFWaskin]`,
+# `open_collective: superpowers-safe`, `patreon: jfwaskin`).
+#
+# Leaving the file in place so the FUNDING button is still recognized
+# by GitHub. To hide the button entirely, delete this file.
 
-github: [obra]
+github: [JFWaskin]

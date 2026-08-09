@@ -19,6 +19,7 @@
 | [`README.kimi.md`](README.kimi.md) | Kimi-Code-specific install and tool-mapping notes. |
 | [`README.opencode.md`](README.opencode.md) | OpenCode-specific install notes (symlink migration, plugin cache). |
 | `windows/` | Windows installer notes (inherited from upstream). |
+| [`marketing/`](marketing/) | Promotional drafts and checklists — Show HN, Reddit, X thread, awesome-list PR text, newsletter pitch, GitHub settings checklist, influencer DMs. |
 
 ## Inherited from upstream
 

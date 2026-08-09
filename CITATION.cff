@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: >
+  If you use superpowers-safe in academic work, please cite it as below.
+  The fork is maintained as a safety-hardened alternative to
+  obra/superpowers; please also cite the upstream if you reference the
+  underlying skills library.
+type: software
+title: "superpowers-safe"
+version: 6.3.0
+date-released: 2026-08-07
+url: "https://github.com/JFWaskin/superpowers-safe"
+repository-code: "https://github.com/JFWaskin/superpowers-safe"
+license: MIT
+keywords:
+  - claude-code
+  - coding-agent
+  - safety
+  - preflight
+  - ai-agents
+  - skills
+  - tdd
+  - debugging
+  - subagent-driven-development
+authors:
+  - family-names: Waskin
+    given-names: Jonathan F.
+    affiliation: Huaqiao University
+    orcid: ""
+references:
+  - type: software
+    title: "obra/superpowers (upstream)"
+    authors:
+      - family-names: Vincent
+        given-names: Jesse
+    url: "https://github.com/obra/superpowers"
+    license: MIT
+  - type: software
+    title: "superpowers-evals (RED-GREEN-REFACTOR harness)"
+    url: "https://github.com/prime-radiant-inc/superpowers-evals"
+    license: MIT
+notes: >
+  This fork adds a mandatory safety-check preflight (5 hard gates:
+  resource budget, command risk scan, loop/spend limits, secret/PII
+  scan, scope confirmation) and a never-override list of destructive
+  operations to the upstream Superpowers skills library. The underlying
+  skills are byte-identical to upstream; only the gating and one new
+  safety-check skill are added.

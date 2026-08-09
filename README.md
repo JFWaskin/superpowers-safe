@@ -2,7 +2,16 @@
 
 > A safety-hardened fork of [obra/superpowers](https://github.com/obra/superpowers). Same skills library, plus a **mandatory safety preflight** before any skill runs.
 
-`superpowers-safe` keeps every skill from upstream Superpowers byte-identical and adds one thing: a `safety-check` preflight that runs **five hard gates** before any work begins. The preflight defends against destructive bash commands, runaway subagents, resource exhaustion, secret leaks, and scope creep.
+<p align="left">
+  <a href="https://github.com/JFWaskin/superpowers-safe/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/JFWaskin/superpowers-safe?color=16A34A"></a>
+  <a href="https://github.com/JFWaskin/superpowers-safe/releases"><img alt="Release" src="https://img.shields.io/github/v/release/JFWaskin/superpowers-safe?color=16A34A"></a>
+  <a href="https://github.com/JFWaskin/superpowers-safe/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/JFWaskin/superpowers-safe?style=social"></a>
+  <a href="https://github.com/JFWaskin/superpowers-safe/network/members"><img alt="Forks" src="https://img.shields.io/github/forks/JFWaskin/superpowers-safe?style=social"></a>
+  <a href="https://github.com/JFWaskin/superpowers-safe/watchers"><img alt="Watchers" src="https://img.shields.io/github/watchers/JFWaskin/superpowers-safe?style=social"></a>
+  <a href="https://github.com/JFWaskin/superpowers-safe/commits/dev"><img alt="Last commit" src="https://img.shields.io/github/last-commit/JFWaskin/superpowers-safe"></a>
+</p>
+
+**TL;DR** — Drop-in replacement for the upstream Superpowers plugin that adds a **mandatory 5-gate safety preflight** before any skill runs. Defends against destructive bash, runaway subagents, resource exhaustion, secret leaks, and scope creep. Same skills. Same workflow. One new `safety-check` skill that the rest of the library refuses to skip.
 
 - Upstream: [`obra/superpowers`](https://github.com/obra/superpowers) — Jesse Vincent & the Prime Radiant team, MIT
 - This fork: [`JFWaskin/superpowers-safe`](https://github.com/JFWaskin/superpowers-safe) — Jonathan F. Waskin, Huaqiao University (HQU)
@@ -31,6 +40,42 @@ The full specification is in [`docs/safety-gate.md`](docs/safety-gate.md). The s
 ### Defense in depth
 
 The skill-level gate is the first line. The recommended second line is a `PreToolUse` hook that blocks destructive bash at the tool layer — even if the agent skips the skill. See [`docs/safety-gate.md#defense-in-depth`](docs/safety-gate.md) for the hook pattern.
+
+---
+
+## Compared to alternatives
+
+| Approach | Skills | Preflight | Cross-runtime | Resists prompt injection | Effort to set up |
+|---|---|---|---|---|---|
+| **Raw Claude Code** (no skills) | ❌ none | ❌ | n/a | ❌ | trivial |
+| **Upstream `obra/superpowers`** | ✅ all 14 | ❌ none | ✅ 12 runtimes | ❌ | one install |
+| **Upstream + hand-rolled `PreToolUse` hook** | ✅ all 14 | ⚠️ ad-hoc, easy to bypass | ✅ | ⚠️ partial (bash only) | medium, custom per project |
+| **Network-firewall-only sandboxes (e.g. Docker, gVisor)** | n/a | ✅ | ✅ | ⚠️ partial (resource only) | high, ops overhead |
+| **`superpowers-safe` (this fork)** | ✅ all 14 + `safety-check` | ✅ **5 hard gates, mandatory, in-skill** | ✅ 12 runtimes | ✅ gate 4 scans writes for `.env`, `*.key`, `*.pem`, tokens | one install |
+
+**What you get that the others don't:** a safety preflight that's enforced by the skills library itself, not by the host. The agent literally cannot start a non-trivial task without passing the gate — even a subagent dispatched in the middle of work has to run it. The hooks and sandboxes are still useful as a second line; the skill is the first.
+
+---
+
+## Who this is for
+
+- You run `subagent-driven-development` or `dispatching-parallel-agents` for hours at a time and worry about one bad `rm -rf` wrecking the box
+- You've ever pasted a `curl | sh` into a Claude session and immediately regretted it
+- You operate Claude Code on machines with real data (production, customer data, your own secrets) and want a hard "no" before destructive operations
+- You build safety-critical software and need an evidence trail (the eval protocol in `docs/eval-protocol.md` gives you RED-GREEN-REFACTOR for gate changes)
+
+If none of those apply, the upstream `obra/superpowers` plugin is probably enough.
+
+---
+
+## Showcase
+
+> _This section is intentionally short. If you use `superpowers-safe` in a project, open a PR adding a one-line entry here._
+
+<!--
+Add your project here:
+- **[project name](https://github.com/you/project)** — one-line description of what you used superpowers-safe for.
+-->
 
 ---
 
