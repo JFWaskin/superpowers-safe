@@ -82,10 +82,22 @@
 | 3.2 Signed commits (GPG/SSH) | 2 hours setup | Low |
 | 3.3 SBOM (zero-deps, but useful) | 1 hour | Low |
 | 3.4 Devcontainer | 1 day | Low |
-| 3.5 Migration guide (upstream → fork) | 4 hours | Medium |
+| **3.5 Migration guide (upstream → fork)** | **4 hours** | **Medium** |
 | 3.6 Governance / RFC process | 1 day | Low |
 | 3.7 Per-runtime install validation (real CLIs) | 1-2 days per runtime | High (when CLIs are non-interactive) |
 | 3.8 Cross-runtime integration tests | 1 week | High |
+
+### Tier 3.5 — Migration guide (shipped 2026-08-10)
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| 3.5 `docs/MIGRATION.md` | ✅ Shipped | `docs/MIGRATION.md` (240 lines). Side-by-side install, per-runtime disable-upstream table, "what's different / what changes in your workflow / what does NOT change / rollback / what may surprise you", filing-issue instructions |
+
+### Tier 3.5 net effect
+
+- **User onboarding cost**: a user coming from `superpowers@claude-plugins-official` now has a single doc that covers "is this for me, how do I install, what changes, how do I roll back"
+- **Side-by-side install is documented** with the exact disable-upstream command for all 12 supported runtimes (rather than just Claude Code)
+- **Surprises are named** before users hit them: more questions from the agent, `sudo` requires OK, subagent concurrency capped at 3, spend thresholds surface, `--force` to `main` blocked
 
 ## Out of scope (intentionally)
 

@@ -6,23 +6,26 @@ is tracked separately; see [obra/superpowers Releases](https://github.com/obra/s
 
 ---
 
-## [Unreleased] — Tier 1 rigor pass (2026-08-08)
-
-See [`docs/rigor-checklist.md`](docs/rigor-checklist.md) for the full tracking document.
+## [Unreleased] — Tier 3.5 migration guide + discovery pass (2026-08-10)
 
 ### Added
 
-- **`docs/THREAT-MODEL.md`** — explicit in-scope, out-of-scope, assumptions, failure modes, residual risk. The honest "what this gate does NOT defend against" answer that reviewers look for.
-- **`SECURITY.md`** — responsible disclosure policy (response timeline, scope, coordinated disclosure). Required cross-reference from THREAT-MODEL.
-- **Per-runtime CI lanes** — `.github/workflows/codex-smoke.yml`, `opencode-smoke.yml`, `kimi-smoke.yml`. Each validates the runtime-specific manifest + runs the fork-agnostic `test-mandatory-gate.sh`. Codex lane has an optional install job (placeholder for when the CLI ships a non-interactive install).
-- **`tests/evals/`** — 3 fully-formed pressure scenarios (rm-rf-outside-cwd, sudo-without-ok, publish-without-ok) + `tests/evals/README.md` (RED-GREEN operational guide) + `tests/evals/quorum-setup.sh` (Quorum install helper) + `tests/evals/.gitignore`.
-- **`docs/rigor-checklist.md`** — tracks what was done, what is planned (Tier 2/3), what is intentionally out of scope.
+- **`docs/MIGRATION.md`** — step-by-step guide for users moving from upstream `superpowers@claude-plugins-official` to this fork. Side-by-side install, per-runtime disable-upstream command (12 runtimes), what's different, what changes in your workflow, what does NOT change, rollback, "what may surprise you" gotchas.
+- **`docs/ENHANCEMENT-LOG.md`** — append-only log of what shipped and why. Cross-references the rigor-checklist tiers; the day-to-day record that the tiers are the strategic arc.
+- **`docs/marketing/`** directory — 8 ready-to-use promotional drafts: README index, GitHub-settings checklist, awesome-list PR text, Show HN post, Reddit drafts (r/ClaudeAI, r/LocalLLaMA, r/MachineLearning), X/Twitter thread (10 tweets), newsletter cold-pitch, influencer DMs. Each is copy-paste-ready.
+- **`assets/social-preview.png`** — 1200×669 banner for Open Graph and the GitHub social preview slot. Shows the 5-gate shield, the title, the tagline, and the bottom row "5 hard gates · 15 skills · 0 surprises".
+- **`CITATION.cff`** — author (Waskin, Huaqiao University), references to upstream `obra/superpowers` and the eval harness, and the "what's added vs upstream" description. Ready for academic citation.
 
 ### Changed
 
-- **`docs/INDEX.md`** — updated to reference the new docs and the `tests/evals/` scenarios directory; added "Where to go next" routing for evaluators (THREAT-MODEL §7 is the "is this for you?" answer).
+- **`README.md`** — added Shields.io badge block (license, release, stars, forks, watchers, last-commit), a one-line TL;DR under the title, a "Compared to alternatives" table (5 rows: raw Claude Code, upstream, upstream + hand-rolled hook, sandbox-only, this fork), a "Who this is for" section with 4 personas, and a "Showcase" placeholder.
+- **`.github/FUNDING.yml`** — was pointing to `obra` (upstream leftover); now points to `JFWaskin`. Inline comment documents how to hide the button if no sponsorship is set up.
+- **`docs/INDEX.md`** — links to the new files; the marketing directory is added to the table.
+- **`docs/rigor-checklist.md`** — Tier 3.5 status table added and marked shipped. Issue log + net-effect summary match the Tier 1 / Tier 2 sections.
 
 ---
+
+## [Unreleased] — Tier 1 rigor pass (2026-08-08)
 
 ## [6.3.0] — 2026-08-07
 

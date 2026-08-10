@@ -16,6 +16,8 @@
 | [`eval-protocol.md`](eval-protocol.md) | RED-GREEN-REFACTOR protocol for safety-gate changes — when it applies, what evidence is required, and the pressure-scenario format. |
 | [`testing.md`](testing.md) | How the two test layers work: `tests/` (plugin code) and `evals/` (real LLM sessions). |
 | [`help-me-install.md`](help-me-install.md) | Copy-pasteable prompt for any agent — paste it in, and the agent detects its runtime, disables the upstream, and runs the right install command. |
+| [`MIGRATION.md`](MIGRATION.md) | Step-by-step guide for users moving from upstream `obra/superpowers` to this fork. Side-by-side install, per-runtime disable-upstream, what's different, what's unchanged, rollback. |
+| [`ENHANCEMENT-LOG.md`](ENHANCEMENT-LOG.md) | Day-to-day record of what shipped to the fork. Append-only; cross-references the rigor-checklist tiers. |
 | [`README.kimi.md`](README.kimi.md) | Kimi-Code-specific install and tool-mapping notes. |
 | [`README.opencode.md`](README.opencode.md) | OpenCode-specific install notes (symlink migration, plugin cache). |
 | `windows/` | Windows installer notes (inherited from upstream). |
