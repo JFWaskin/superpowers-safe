@@ -132,7 +132,9 @@ This fork mirrors upstream's cross-runtime packaging. The same safety gate is ho
 | Codex App | Search "superpowers-safe" in Plugins → Coding |
 | Codex CLI | `/plugins` → search `superpowers-safe` → Install |
 | Cursor | `/add-plugin superpowers-safe` |
+| Devin CLI | `devin plugins install JFWaskin/superpowers-safe` |
 | Gemini CLI | `gemini extensions install https://github.com/JFWaskin/superpowers-safe` |
+| Grok Build CLI | `grok plugin install superpowers-safe@JFWaskin-superpowers-safe --trust` (or open `/marketplace` in the TUI and search) |
 | Kimi Code | Plugin marketplace (search `superpowers-safe`) |
 | OpenCode | Plugin marketplace (search `superpowers-safe`) |
 | Pi | Marketplace install (search `superpowers-safe`) |
@@ -151,6 +153,7 @@ superpowers-safe/
 ├── .claude-plugin/        Claude Code plugin + marketplace manifests
 ├── .codex-plugin/         Codex plugin manifest
 ├── .cursor-plugin/        Cursor plugin manifest
+├── .devin-plugin/         Devin CLI plugin manifest
 ├── .kimi-plugin/          Kimi Code plugin manifest
 ├── .hermes-plugin/        Hermes plugin manifest
 ├── gemini-extension.json  Gemini CLI extension manifest

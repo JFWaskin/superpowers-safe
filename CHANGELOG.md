@@ -23,6 +23,24 @@ is tracked separately; see [obra/superpowers Releases](https://github.com/obra/s
 - **`docs/INDEX.md`** — links to the new files; the marketing directory is added to the table.
 - **`docs/rigor-checklist.md`** — Tier 3.5 status table added and marked shipped. Issue log + net-effect summary match the Tier 1 / Tier 2 sections.
 
+## [Unreleased] — Upstream sync (2026-08-11)
+
+### Added
+
+- **Devin CLI support.** New `.devin-plugin/plugin.json` manifest registers the fork as installable via `devin plugins install JFWaskin/superpowers-safe`. Skills are auto-discovered from `./skills/`; Devin's own system prompt already documents its subagent / todo / question tools, so no tool-mapping scaffold is required. CI test in `tests/devin/test-devin-plugin.sh` validates the manifest. Cross-runtime support table in the README and the compatibility matrix updated.
+- **Grok Build CLI in cross-runtime support table.** Documented the `grok plugin install superpowers-safe@JFWaskin-superpowers-safe --trust` install path (no dedicated manifest yet — the fork's `package.json` is the closest thing). Mirrors upstream `obra/superpowers#1919`.
+
+### Changed
+
+- **`.version-bump.json`** — `.devin-plugin/plugin.json` added to the version-bump file list so version-bumps update it alongside the other manifests.
+- **`scripts/sync-to-codex-plugin.sh`** — `/.devin-plugin/` added to the rsync exclude list, so embedded Codex plugins don't ship the Devin-specific manifest.
+- **`docs/compatibility.md`** — Devin CLI and Grok Build CLI rows added to the runtime matrix. Devin is "manifest validated" (🟡 for install / load / safety gate, ✅ for plugin manifest). Grok is "no dedicated manifest yet" (🚫 for plugin manifest, 🟡 for the rest).
+- **`README.md`** — Devin CLI and Grok Build CLI added to the cross-runtime support table. `.devin-plugin/` added to the repository-layout section.
+
+### Inherited from upstream
+
+- **`skills/brainstorming/visual-companion.md`** — Copilot CLI backgrounding guidance corrected for Windows. The previous instructions referenced `read_bash` / `stop_bash` (Claude-Code-only tools); the new guidance uses Copilot CLI's own non-blocking/background shell mechanism and explicitly notes the Git-Bash invocation needed on Windows. Mirrors upstream `obra/superpowers#2006`.
+
 ---
 
 ## [Unreleased] — Tier 1 rigor pass (2026-08-08)

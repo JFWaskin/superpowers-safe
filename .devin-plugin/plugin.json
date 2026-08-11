@@ -1,0 +1,24 @@
+{
+  "name": "superpowers-safe",
+  "version": "6.3.0",
+  "description": "An agentic skills framework & software development methodology that works: planning, TDD, debugging, and collaboration workflows. With a mandatory safety preflight before any skill runs.",
+  "author": {
+    "name": "Jonathan F. Waskin",
+    "email": "JFWaskin@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/JFWaskin/superpowers-safe",
+  "repository": "https://github.com/JFWaskin/superpowers-safe",
+  "license": "MIT",
+  "keywords": [
+    "brainstorming",
+    "subagent-driven-development",
+    "skills",
+    "planning",
+    "tdd",
+    "debugging",
+    "code-review",
+    "workflow",
+    "safety",
+    "preflight"
+  ]
+}

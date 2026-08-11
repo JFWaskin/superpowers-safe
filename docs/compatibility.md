@@ -19,6 +19,8 @@
 | **Gemini CLI** | ✅ | ✅ | ✅ | ✅ | `gemini skills link` over 15 skills including safety-check. Gate's resource check (`vm_stat`) is macOS-specific — would need adjustment on Linux. |
 | **Codex CLI** | ❌ | 🟡 | 🟡 | ✅ | Codex CLI not installed on test host. Manifest validated; install path requires OpenAI's plugin publish flow. |
 | **Cursor** | ❌ | 🟡 | 🟡 | ✅ | Cursor not installed on test host. Plugin auto-discovered via `.cursor-plugin/plugin.json`. |
+| **Devin CLI** | ❌ | 🟡 | 🟡 | ✅ | Devin not installed on test host. `.devin-plugin/plugin.json` is auto-discovered; Devin's own system prompt already documents subagent / todo / question tools, so no tool-mapping scaffold is required. CI test in `tests/devin/test-devin-plugin.sh`. |
+| **Grok Build CLI** | ❌ | 🟡 | 🟡 | 🚫 | Grok not installed on test host. Plugin would be installed via `grok plugin install ... --trust`; no dedicated manifest yet (the fork's `package.json` is the closest thing). |
 | **Kimi Code** | ❌ | 🟡 | 🟡 | ✅ | Kimi not installed on test host. Plugin install is TUI-only. `skillInstructions` references the safety-check skill. |
 | **OpenCode** | ❌ | 🟡 | 🟡 | ✅ | OpenCode not installed on test host. Plugin format lives in `package.json` (Pi-compatible). |
 | **Pi** | ❌ | 🟡 | 🟡 | ✅ | Pi not installed on test host. Same package.json layout. |
