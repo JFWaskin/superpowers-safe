@@ -149,3 +149,35 @@ If something has already gone wrong (process runaway, disk fill, etc.):
 5. Report to user with: what happened, what was killed, what is left to clean up
 
 The user is the final safety authority. If in doubt, ask.
+
+## Recommended Substrate (Defense in Depth)
+
+This skill operates at the **reasoning layer** — it inspects what the
+agent is about to do and either allows, rules, or halts. It cannot
+prevent a determined or compromised agent from bypassing it (see
+[`docs/THREAT-MODEL.md` §6.3](../../docs/THREAT-MODEL.md)).
+
+For **capability-layer** enforcement (kernel-level disk / network /
+credential isolation that the agent physically cannot bypass), layer
+this skill on top of an OS-level sandbox:
+
+| Substrate | OS | Install | Notes |
+|-----------|-----|---------|-------|
+| [`nono.sh`](https://nono.sh) | macOS / Linux / Windows | `curl -fsSL https://nono.sh/install.sh \| sh` | Recommended. Capability-based, per-tool micro-sandbox, network filtering, credential proxy injection, hash-chained audit log. Created by the Sigstore team, Apache-2.0. |
+| Docker / Podman | All | standard | Heavier; coarser policy. |
+| `sandbox-exec` | macOS | built-in | Profile-based; no per-tool granularity. |
+| `firejail` | Linux | distro packages | Profile-based. |
+
+**What each layer catches that the other cannot:**
+
+- This skill (reasoning): spend / token budgets, scope creep, time
+  pressure + rationalization patterns, autonomous-loop limits.
+- `nono` (capability): arbitrary file reads outside working dir,
+  exfiltration to non-allow-listed domains, real-credential reads
+  (the agent only ever sees proxy-injected phantom tokens), post-
+  install arbitrary code from compromised packages.
+
+Together they form defense in depth: a bypass of the skill layer is
+still blocked at the kernel layer, and a bypass of the kernel layer
+(e.g. via an allow-listed tool) is still caught at the reasoning
+layer.

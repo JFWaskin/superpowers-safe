@@ -141,6 +141,8 @@ attacker-controlled endpoints. Mitigations:
 - Network egress firewall (out of scope for the gate)
 - DNS-level restrictions
 - Outbound proxy that logs all calls
+- OS-level sandbox with domain allow-list (e.g. nono.sh) — preferred
+  when the agent should not be able to reach arbitrary domains
 
 ### 4.5 Side-channel leakage
 
@@ -231,9 +233,22 @@ the agent from:
 - Writing to memory locations that survive session restarts and
   re-inject malicious instructions
 
-**Mitigation**: for high-stakes work, use a sandbox (Docker, firejail,
-macOS sandbox-exec) so the agent cannot escape its working
-environment.
+**Mitigation**: for high-stakes work, layer the skill-level gate on top
+of an OS-level sandbox so the two layers cover different threat
+surfaces:
+
+- **Kernel-level sandbox (recommended)**: [nono.sh](https://nono.sh)
+  (Seatbelt on macOS, Landlock on Linux, WSL2 on Windows) — capability-
+  based, per-tool micro-sandbox, network filtering, credential proxy
+  injection. Created by the Sigstore team, Apache-2.0.
+- **Container**: Docker, Podman, or a remote dev container.
+- **OS profile**: `sandbox-exec` profile on macOS, firejail on Linux.
+
+The two layers are complementary, not redundant: the skill gate catches
+**policy** violations (spend limits, scope creep, risk patterns) that
+the sandbox cannot observe; the sandbox catches **capability** violations
+(reading files it shouldn't, exfiltrating to blocked domains, reading
+real credentials) that the skill gate cannot enforce. See §7.
 
 ### 6.4 Time-of-check vs time-of-use
 
@@ -290,16 +305,21 @@ The gate is one layer in a stack. The recommended full stack is:
 | Layer | What it adds | Out of scope for this gate? |
 |-------|--------------|-----------------------------|
 | **1. Safety gate (this)** | Reasoning-time check + tool-level block | ✅ |
-| **2. OS-level sandbox** | `sandbox-exec` (macOS) / `firejail` (Linux) / Docker | ❌ not provided |
-| **3. Network egress firewall** | Restrict outbound to known hosts | ❌ not provided |
-| **4. Filesystem mount restrictions** | Read-only mounts for system paths | ❌ not provided |
-| **5. Audit log** | Record every action with timestamp + actor | ❌ not provided |
+| **2. OS-level sandbox** | `nono.sh` (kernel-enforced, recommended) / `sandbox-exec` (macOS) / `firejail` (Linux) / Docker | ❌ not provided |
+| **3. Network egress firewall** | Domain allow-list at the kernel layer (covered by `nono` profile) | ❌ not provided |
+| **4. Filesystem mount restrictions** | Read-only mounts + per-tool capability scopes (covered by `nono`) | ❌ not provided |
+| **5. Audit log** | Cryptographic, hash-chained Merkle-rooted trail (covered by `nono`) | ❌ not provided |
 | **6. User review checkpoint** | Periodic human-in-the-loop on long sessions | 🟡 partially (Gate 3) |
 | **7. External token accounting** | API-side usage dashboard | ❌ not provided |
 
 If your environment needs layer 2-7, **build them separately**. The
 safety gate assumes layers 1 and (for non-trivial work) 6 are present
 but does not enforce the others.
+
+For layer 2-5, the concrete current option is
+[`nono.sh`](https://nono.sh) (Sigstore team, Apache-2.0, supports
+Seatbelt on macOS, Landlock on Linux, WSL2 on Windows). See §6.3 for
+how the two layers (skill gate + nono) divide responsibility.
 
 ## 9. Reporting bypasses
 
