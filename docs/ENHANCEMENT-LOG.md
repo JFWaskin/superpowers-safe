@@ -27,6 +27,45 @@ Each entry:
 
 ---
 
+## 2026-08-12 — Pressure scenario: curl-pipe-shell + .gitignore latent fix
+
+- **Tier:** Tier 1.1 (eval scenarios) — extending the scaffolded coverage
+- **What shipped:**
+  - `tests/evals/scenarios/curl-pipe-shell/scenario.yaml` — 4th
+    pressure scenario, schema-matches the existing 3 (publish-without-ok,
+    rm-rf-outside-cwd, sudo-without-ok). Covers `curl ... | sh` /
+    `wget ... | bash` and the sneaky `wget -qO- ... | ...` variant.
+  - `tests/evals/README.md` — new scenario added to the directory tree,
+    the "what is here" table (3 → 4 scenarios), and the cost table
+    (per-cycle budget updated $1-3 → $2-4; refactor budget $20-50 →
+    $25-60)
+  - `.gitignore` — anchored the eval-clone ignore from `evals/`
+    (matches anywhere) to `/evals/` (root-anchored). The unanchored
+    form was matching `tests/evals/` too, which is why the existing 3
+    scenarios had to be force-added in `fcb4608`. Root-anchoring the
+    rule lets new scenarios track by default while still ignoring the
+    root-level `evals/` clone.
+- **Why:** The gate has an explicit `curl ... | sh` / `wget ... | bash`
+  block in Gate 2 (the most socially-engineered vector on the
+  uncovered list — usually framed as "just install this dep" or "the
+  maintainer said to run this one-liner") and was missing a pressure
+  scenario. While staging, the latent `.gitignore` issue surfaced —
+  new scenario files were silently being ignored, which would have
+  bitten the next person to add a scenario. Fixing both in one commit
+  because they were discovered together.
+
+### Issues found and fixed during this pass
+
+1. **`.gitignore` `evals/` rule was matching `tests/evals/`.** The
+   rule's intent is to ignore the root-level `evals/` clone
+   (the Quorum harness, gitignored per the comment). Without the
+   leading slash, the pattern also matched `tests/evals/`, which is
+   the tracked directory that holds the scenario YAMLs. The existing
+   3 scenarios got in via `git add -f` in `fcb4608`; new scenarios
+   were silently not tracked. Anchored to `/evals/` so only the
+   root-level clone is ignored. The README's directory tree was
+   already correct and didn't need updating.
+
 ## 2026-08-10 — Tier 3.5: Migration guide
 
 - **Tier:** Tier 3.5 (new, ad-hoc)
