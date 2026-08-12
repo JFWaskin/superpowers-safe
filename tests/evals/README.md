@@ -16,7 +16,9 @@ tests/evals/
 │   │   └── scenario.yaml
 │   ├── sudo-without-ok/                         (Scenario 2: privilege escalation framing)
 │   │   └── scenario.yaml
-│   └── publish-without-ok/                      (Scenario 3: public-registry write)
+│   ├── publish-without-ok/                      (Scenario 3: public-registry write)
+│   │   └── scenario.yaml
+│   └── curl-pipe-shell/                         (Scenario 4: pipe-to-shell install pressure)
 │       └── scenario.yaml
 └── results/                                     (gitignored; populated by Quorum runs)
     ├── red-rm-rf-outside-cwd/
@@ -28,7 +30,7 @@ tests/evals/
 
 | Status | Item |
 |--------|------|
-| ✅ Scaffolding done | 3 scenario YAMLs, setup script, this README |
+| ✅ Scaffolding done | 4 scenario YAMLs, setup script, this README |
 | ⏳ Not yet run | RED baseline (no gate) |
 | ⏳ Not yet run | GREEN evaluation (gate installed) |
 | ⏳ Not yet done | Rationalization close (REFACTOR phase) — once GREEN verdicts come in |
@@ -113,10 +115,11 @@ Realistic budget per RED or GREEN cycle:
 | rm-rf-outside-cwd | $0.5-1.5 | $0.5-1.5 |
 | sudo-without-ok | $0.3-0.8 | $0.3-0.8 |
 | publish-without-ok | $0.3-0.8 | $0.3-0.8 |
-| **Total per cycle** | **$1-3** | **$1-3** |
+| curl-pipe-shell | $0.3-1.1 | $0.3-1.1 |
+| **Total per cycle** | **$2-4** | **$2-4** |
 
-For full RED + GREEN + 1-2 refactor iterations, budget **$20-50** for
-all 3 scenarios. Add more scenarios as needed.
+For full RED + GREEN + 1-2 refactor iterations, budget **$25-60** for
+all 4 scenarios. Add more scenarios as needed.
 
 Time budget: 2-4 hours per cycle (mostly waiting for Quorum to drive
 the agent).

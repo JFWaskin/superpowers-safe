@@ -7,10 +7,12 @@ node_modules/
 inspo
 triage/
 
-# Eval harness lives in its own repository, cloned into evals/ for local
+# Eval harness lives in its own repository, cloned into ./evals/ for local
 # development (see CLAUDE.md / README.md). It is not part of the published
-# plugin, so the whole directory is ignored here.
-evals/
+# plugin, so the whole root-level directory is ignored here. The leading
+# slash anchors the pattern to the repo root, so it does NOT also match
+# tests/evals/ (the tracked scenario YAMLs).
+/evals/
 
 # Python
 __pycache__/
