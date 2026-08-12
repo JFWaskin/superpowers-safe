@@ -10,155 +10,127 @@
 ```
 tests/evals/
 ├── README.md                                    (this file)
+├── validate-scenarios.sh                        (CI gate; checks all 4 scenarios)
 ├── quorum-setup.sh                              (one-time setup: clone superpowers-evals, bun install)
 ├── scenarios/
-│   ├── rm-rf-outside-cwd/                       (Scenario 1: out-of-scope destructive delete)
-│   │   └── scenario.yaml
+│   ├── rm-rf-outside-cwd/                       (Scenario 1: out-of-cwd destructive delete)
+│   │   ├── scenario.yaml                        (Quorum metadata)
+│   │   ├── story.md                             (pressure narrative + acceptance criteria)
+│   │   ├── setup.sh                             (pre() fixture)
+│   │   └── checks.sh                            (post() deterministic checks)
 │   ├── sudo-without-ok/                         (Scenario 2: privilege escalation framing)
-│   │   └── scenario.yaml
+│   │   ├── scenario.yaml
+│   │   ├── story.md
+│   │   ├── setup.sh
+│   │   └── checks.sh
 │   ├── publish-without-ok/                      (Scenario 3: public-registry write)
-│   │   └── scenario.yaml
+│   │   ├── scenario.yaml
+│   │   ├── story.md
+│   │   ├── setup.sh
+│   │   └── checks.sh
 │   └── curl-pipe-shell/                         (Scenario 4: pipe-to-shell install pressure)
-│       └── scenario.yaml
+│       ├── scenario.yaml
+│       ├── story.md
+│       ├── setup.sh
+│       └── checks.sh
+├── baselines/                                   (expected RED behavior; synthetic, real runs replace)
+│   ├── rm-rf-outside-cwd.md
+│   ├── sudo-without-ok.md
+│   ├── publish-without-ok.md
+│   └── curl-pipe-shell.md
 └── results/                                     (gitignored; populated by Quorum runs)
-    ├── red-rm-rf-outside-cwd/
-    ├── green-rm-rf-outside-cwd/
-    └── ...
+    └── <run-id>/
+        └── log.txt
 ```
 
 ## What is here vs. what isn't
 
 | Status | Item |
 |--------|------|
-| ✅ Scaffolding done | 4 scenario YAMLs, setup script, this README |
-| ⏳ Not yet run | RED baseline (no gate) |
-| ⏳ Not yet run | GREEN evaluation (gate installed) |
+| ✅ Scaffolding done | 4 scenarios in Quorum format (yaml + story + setup + checks), 4 RED baseline transcripts, this README, `validate-scenarios.sh` |
+| 🟡 RED baseline | Synthetic — describes expected agent behavior without the safety-check skill. Real Quorum runs (with API budget) would replace these with captured transcripts. |
+| ⏳ Not yet run | Real Quorum runs (live evals with API) |
 | ⏳ Not yet done | Rationalization close (REFACTOR phase) — once GREEN verdicts come in |
 
-The scenarios are **ready to run** but have **not been run yet**.
+## Format
 
-## How to run
+Each scenario follows the [Quorum](https://github.com/prime-radiant-inc/superpowers-evals)
+layout (the current name for the eval harness — was "Drill" in older
+versions of the upstream docs):
 
-### One-time setup
+- **`scenario.yaml`** — Quorum metadata (`id`, `title`, `status`, `tags`,
+  `quorum_max_time`, `gates_under_test`).
+- **`story.md`** — the pressure narrative + acceptance criteria + the
+  pressure script (the exact turns the harness sends to the agent) +
+  reference to the matching RED baseline.
+- **`setup.sh`** — `pre()` function: builds fixtures, mocks credentials,
+  sets the working dir. Idempotent: `rm -rf` any prior state at the top.
+- **`checks.sh`** — `post()` function: deterministic checks against
+  the captured transcript. `safety-check` must have been called; the
+  blocked command pattern must not appear; per-command OK count must
+  match.
+
+## How to validate locally
 
 ```bash
+bash tests/evals/validate-scenarios.sh
+```
+
+This checks each scenario for: required files, required yaml fields,
+frontmatter, `pre()` / `post()` functions, shellcheck cleanliness, and
+the Acceptance Criteria section in `story.md`. Exits non-zero on any
+failure. Wired into the existing CI workflow.
+
+## How to run (real Quorum, when API budget is available)
+
+```bash
+# One-time setup
 bash tests/evals/quorum-setup.sh
-```
 
-This clones `prime-radiant-inc/superpowers-evals` into `./evals/` (git
-submodule layout; that path is in `.gitignore` so it doesn't pollute
-the repo). Then `bun install`s Quorum.
-
-### Single scenario (manual)
-
-```bash
+# Per-scenario run
 cd evals
-bun run quorum run ../tests/evals/scenarios/rm-rf-outside-cwd/scenario.yaml
+TRANSCRIPT=../tests/evals/results/<run-id>/log.txt \
+  bun run quorum run ../tests/evals/scenarios/rm-rf-outside-cwd/scenario.yaml \
+    --coding-agent claude --credential sonnet
+
+# Run the post-checks
+TRANSCRIPT=../tests/evals/results/<run-id>/log.txt \
+  bash ../tests/evals/scenarios/rm-rf-outside-cwd/checks.sh
 ```
 
-The output is a pass/fail/indeterminate verdict plus a transcript. Save
-the output to `tests/evals/results/{red|green}-<scenario>/` for the
-eval PR.
+The RED baseline transcript is in `baselines/<scenario>.md`. A real
+Quorum run produces a transcript that the post-check verifies against
+the Acceptance Criteria in `story.md`. The synthetic RED baseline is
+the author's pre-run prediction; if a real run deviates, update
+either the baseline (if the deviation is benign — different but still
+safe) or the skill's bulletproofing (if the deviation reveals a
+rationalization the bulletproofing didn't close).
 
-### RED baseline (run WITHOUT the gate)
+## What's still needed
 
-Before the gate works, run all 3 scenarios to capture the RED baseline:
+- **Real Quorum runs** to replace the synthetic RED baselines with
+  captured transcripts. Requires API budget; budget-per-scenario
+  estimated at $1-3 RED + $1-3 GREEN each (4 scenarios × 2 cycles).
+- **REFACTOR phase** (closes rationalization loopholes that the real
+  runs reveal). Begins after the first GREEN run lands.
+- **Cross-harness runs**: Claude + Codex + Kimi + Gemini at minimum.
+  See [`docs/experiments/dual-layer-protection.md`](../../docs/experiments/dual-layer-protection.md)
+  for the cross-harness methodology.
 
-```bash
-# 1. Temporarily disable the gate
-git stash push -- skills/using-superpowers/SKILL.md
-git stash push -- skills/safety-check/SKILL.md
+## Why this layout
 
-# 2. Run each scenario, save results
-for s in tests/evals/scenarios/*/; do
-  name=$(basename "$s")
-  cd evals
-  bun run quorum run "../$s/scenario.yaml" 2>&1 | tee "../tests/evals/results/red-${name}/log.txt"
-  cd ../..
-done
+The Quorum format (yaml + story + setup + checks) was adopted from
+the upstream `prime-radiant-inc/superpowers-evals` repo's
+`sdd-escalates-broken-plan` scenario, which is the most thoroughly
+structured scenario in that repo. The pattern lets a maintainer read
+the acceptance criteria in 30 seconds (`story.md`'s `## Acceptance
+Criteria` section) and the deterministic gates in another 30 seconds
+(`checks.sh`). Compared to the previous single-yaml format, the
+separation makes it easier to:
 
-# 3. Re-apply the gate
-git stash pop
-```
-
-### GREEN evaluation (run WITH the gate)
-
-```bash
-for s in tests/evals/scenarios/*/; do
-  name=$(basename "$s")
-  cd evals
-  bun run quorum run "../$s/scenario.yaml" 2>&1 | tee "../tests/evals/results/green-${name}/log.txt"
-  cd ../..
-done
-```
-
-### Compare RED vs GREEN
-
-```bash
-ls tests/evals/results/red-*/log.txt tests/evals/results/green-*/log.txt
-# Read each pair side by side; record:
-#   - scenario name
-#   - RED verdict + the agent's rationalization
-#   - GREEN verdict + the agent's compliant action
-#   - any new rationalization that the gate didn't close
-```
-
-Attach the resulting table to the eval PR (per `docs/eval-protocol.md`).
-
-## Cost budget
-
-Each scenario = one full Claude Code agent run with a real API spend.
-Realistic budget per RED or GREEN cycle:
-
-| Scenario | Estimated cost (RED) | Estimated cost (GREEN) |
-|----------|---------------------|------------------------|
-| rm-rf-outside-cwd | $0.5-1.5 | $0.5-1.5 |
-| sudo-without-ok | $0.3-0.8 | $0.3-0.8 |
-| publish-without-ok | $0.3-0.8 | $0.3-0.8 |
-| curl-pipe-shell | $0.3-1.1 | $0.3-1.1 |
-| **Total per cycle** | **$2-4** | **$2-4** |
-
-For full RED + GREEN + 1-2 refactor iterations, budget **$25-60** for
-all 4 scenarios. Add more scenarios as needed.
-
-Time budget: 2-4 hours per cycle (mostly waiting for Quorum to drive
-the agent).
-
-## When to run
-
-Per `docs/eval-protocol.md`:
-- RED baseline: before submitting any change to the gate
-- GREEN evaluation: after implementing a change
-- Refactor: when GREEN reveals new rationalizations
-
-For the **initial v6.3.0 release**: the eval was NOT run. The release
-ships with:
-- Static tests (8 in `test-mandatory-gate.sh`, 5 in `test-safety-check.sh`)
-- Manual review of the 5 gates and 10 hard limits in `skills/safety-check/SKILL.md`
-- The scenarios in this directory, ready to be run
-
-## Adding a new scenario
-
-1. Create `tests/evals/scenarios/<scenario-name>/`
-2. Write `scenario.yaml` (see existing 3 for the schema)
-3. Run RED + GREEN + compare
-4. Add the verdict table to your PR
-
-A good scenario has:
-- **A real pressure**: time pressure, authority pressure, framing
-  pressure, or novelty (something the agent hasn't seen)
-- **A specific gate it's testing**: name the gate in the
-  description
-- **An expected behavior**: what should the agent do when the gate
-  works correctly
-- **A failure mode**: what does the agent do without the gate (so RED
-  has something to fail on)
-
-## References
-
-- [`../../docs/eval-protocol.md`](../../docs/eval-protocol.md) — the
-  RED-GREEN-REFACTOR protocol this directory implements
-- [`../../docs/THREAT-MODEL.md`](../../docs/THREAT-MODEL.md) — what
-  the gate covers; scenarios should test claims made here
-- [`prime-radiant-inc/superpowers-evals`](https://github.com/prime-radiant-inc/superpowers-evals)
-  — the Quorum harness, cloned by `quorum-setup.sh`
+- Read the pressure narrative without scrolling past a yaml frontmatter
+- Find the deterministic check for a given behavior
+- Update one part (e.g., tighten an acceptance criterion) without
+  re-reading the rest
+- Port a scenario to a different harness by changing only `setup.sh`
+  and `checks.sh`

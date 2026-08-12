@@ -25,3 +25,4 @@ __pycache__/
 # local Claude Code config. These are for one-shot rollback and should
 # not be committed.
 .install-backups/
+.in_use/
