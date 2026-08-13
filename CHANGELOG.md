@@ -6,6 +6,13 @@ is tracked separately; see [obra/superpowers Releases](https://github.com/obra/s
 
 ---
 
+## [Unreleased] — Upstream sync (2026-08-13)
+
+### Changed
+
+- **`CODE_OF_CONDUCT.md`** — replaced the Contributor Covenant v3.0 with the Prime Radiant Community Code of Conduct. Inherited verbatim from upstream `obra/superpowers#2122`. Same scope and enforcement ladder structure; new framing ("Encouraged Behaviors" / "Restricted Behaviors" / "Other Restrictions") and explicit reference to GitHub + the Prime Radiant Discord server as covered spaces. Reporting and enforcement contact channels are unchanged for this fork (the issue-tracker and the project owner's email).
+- **`RELEASE-NOTES.md`** — added the upstream v6.3.0 (2026-08-12) section. Covers upstream's harness additions (Devin CLI, Hermes Agent, Grok Build CLI), the brainstorming ceremony scaling change, the SDD plan-scoped workspace + resume-the-implementer fix-loop, Codex event-driven subagent waits, and the Windows fixes (worktree removal safety, Copilot CLI backgrounding, `render-graphs.js`). Brought in verbatim; this fork's own `CHANGELOG.md` is the user-facing record of fork-specific changes, and `RELEASE-NOTES.md` is the inherited upstream-side record.
+
 ## [Unreleased] — Tier 3.5 migration guide + discovery pass (2026-08-10)
 
 ### Added

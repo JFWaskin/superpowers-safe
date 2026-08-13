@@ -27,6 +27,57 @@ Each entry:
 
 ---
 
+## 2026-08-13 — Upstream sync: Prime Radiant CoC + v6.3.0 release notes
+
+- **Tier:** Tier 1 (project hygiene) — staying current with upstream `obra/superpowers`
+- **What shipped:**
+  - **`CODE_OF_CONDUCT.md`** — replaced wholesale with upstream's Prime
+    Radiant Community Code of Conduct (`fd02874`, `obra/superpowers#2122`).
+    The previous file was the Contributor Covenant v3.0 (added in
+    `eccd453`). The new document keeps the same scope and 4-rung
+    enforcement ladder; re-frames the body as "Encouraged Behaviors" /
+    "Restricted Behaviors" / "Other Restrictions" and explicitly names
+    GitHub and the Prime Radiant Discord server as covered spaces.
+  - **`RELEASE-NOTES.md`** — added the upstream v6.3.0 (2026-08-12)
+    section as a new top entry. The local file previously ended at v6.2.0
+    because the fork's initial commit predated the v6.3.0 release. The
+    new section is brought in verbatim from upstream and covers Devin
+    CLI / Hermes Agent / Grok Build CLI harness support, the
+    brainstorming ceremony scaling change, SDD plan-scoped workspace +
+    resume-the-implementer fix-loop, Codex event-driven subagent waits,
+    and the Windows fixes (worktree removal safety, Copilot CLI
+    backgrounding, `render-graphs.js`).
+  - **`CHANGELOG.md`** — new "Upstream sync (2026-08-13)" section at
+    the top, paired with the ENHANCEMENT-LOG entry.
+- **Why:** Upstream's `dev` moved 7 commits ahead (034958f → fd02874)
+  since the 2026-08-11 sync. Two changes are substantive and
+  user-facing: the CoC rewrite (a community document; wholesale take is
+  appropriate per `docs/sync-upstream.md` — not in the conflict-policy
+  table, default = take upstream) and the v6.3.0 release notes (which
+  the fork inherits from upstream and was missing). The plugin-manifest
+  version bumps in the same upstream batch are a no-op for this fork:
+  the fork's manifests already carry v6.3.0 (our first fork release)
+  with fork-specific `name` / `author` / `description` / `keywords`,
+  so `diff` against upstream's `v6.2.0 → v6.3.0` shows only the
+  intentional fork deltas. No version bump needed.
+
+### Issues found and fixed during this pass
+
+1. **`RELEASE-NOTES.md` was 1 release behind at the top.** The local
+   copy ended at v6.2.0 (2026-07-23) because the fork's initial commit
+   predated upstream's v6.3.0 release on 2026-08-12. The fork's own
+   release-history record (its `CHANGELOG.md`) is correct; the
+   inherited upstream-side record wasn't being kept in sync. Prepended
+   the v6.3.0 section from upstream; the rest of the file is unchanged.
+2. **The conflict-resolution policy table doesn't list `CODE_OF_CONDUCT.md`
+   or `RELEASE-NOTES.md`.** Both are inherited-from-upstream community
+   / process documents with no fork-specific customization. Treating
+   the default rule ("take upstream") as the right move; this matches
+   the policy-table entry for `tests/**` ("take upstream; re-add
+   fork-specific tests as new files") and `hooks/session-start`
+   ("auto-generated; take upstream"). Considered for a future
+   `docs/sync-upstream.md` patch (out of scope for this pass).
+
 ## 2026-08-12 — Pressure scenario: curl-pipe-shell + .gitignore latent fix
 
 - **Tier:** Tier 1.1 (eval scenarios) — extending the scaffolded coverage
