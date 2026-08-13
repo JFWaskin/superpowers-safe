@@ -1,8 +1,11 @@
 # PR: VoltAgent/awesome-claude-code-subagents — FIRED
 
 > **Target repo:** https://github.com/VoltAgent/awesome-claude-code-subagents
+> **PR:** https://github.com/VoltAgent/awesome-claude-code-subagents/pull/309
+> **Fork:** https://github.com/JFWaskin/awesome-claude-code-subagents
+> **Branch on this fork:** `feat/safety-check-subagent`
 > **Stars:** ~24k
-> **Status:** **FIRED.**
+> **Status:** **FIRED — PR open (#309).**
 >
 > Reframed safety-check as a subagent `.md` definition (per the
 > upstream template), filed the PR with category `04-quality-security`,
