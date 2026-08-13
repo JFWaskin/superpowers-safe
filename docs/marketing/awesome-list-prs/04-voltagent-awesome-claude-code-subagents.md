@@ -143,3 +143,34 @@ they form a sturdier default than either alone.
 - If accepted: real win, 24k-star repo with direct subagent fit.
 - If rejected: a "rationale rejected" issue note for future
   reference; do not re-submit without a structural change.
+
+## Iteration log
+
+- **Iteration 1 (initial PR):** opened #309 with the subagent body
+  byte-identical to the fork copy. Bumped `voltagent-qa-sec` 1.1.1 →
+  1.1.2 in both the category plugin manifest and the top-level
+  marketplace manifest. Updated main README, category README
+  (Available Subagents, Quick Selection Guide, Security Assessment
+  pattern).
+- **Iteration 2 (PR #309, follow-up commit):** trimmed the
+  frontmatter description from ~480 chars to ~415 chars (peer
+  average is ~280; the 5-gate list is the unique value prop and
+  worth keeping). Removed the "Ralph-style" mention in two places
+  and replaced with the generic "self-iteration loop" — the upstream
+  maintainers' "stay vendor-neutral" rule applied more strictly than
+  the first pass. No version bump needed (this is a content
+  refinement, not a new agent).
+- **Iteration 2 (superpowers-safe, this branch):** added a
+  `See also` cross-link between the canonical skill form
+  (`skills/safety-check/SKILL.md`) and the subagent form
+  (`fork/safety-check.md`) so future maintainers and reviewers can
+  find the sibling without grep'ing for the path. The two forms
+  share gates, hard limits, and the substrate table; they differ
+  only in invocation surface and tool scoping.
+
+The fork copy of the subagent intentionally diverges from the
+upstream PR copy on two points: (1) the upstream copy has the
+shorter description, and (2) the upstream copy drops the
+"Ralph-style" product mention. These are deliberate concessions to
+the upstream maintainers' rules and do not affect the fork's
+local-fidelity.
