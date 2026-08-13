@@ -108,13 +108,53 @@
 | Sandboxing (firejail / Docker) | OS-level concern; documented in THREAT-MODEL §6.3 |
 | Malicious-agent defense | The gate assumes the agent is trying to do the right thing. Malicious agents need a different solution. Documented in THREAT-MODEL §4.1 |
 
-## What to attach to the upstream PR / discussion
+## Upstream engagement — closed 2026-08-12
 
-When posting in `obra/superpowers#2111` or `obra/superpowers-marketplace#69`,
-the rigor checklist is the proof-of-work. Suggested one-liner:
+`obra/superpowers#2111` (the opt-in safety-check preflight interest check)
+was closed by @obra on 2026-08-12 with `state_reason: not_planned` and
+a friendly comment from obra's triage agent.
 
-> "Added a THREAT-MODEL.md and 3 per-runtime CI lanes. Eval scenarios
-> are scaffolded (3 ready to run)."
+The decision is **policy, not quality** — three upstream `CLAUDE.md` rules
+apply:
+
+- Superpowers core stays zero-dependency (the nono.sh integration rules
+  that part out)
+- Fork-derived features don't come upstream
+- Workflow additions that some users want and others don't ship as
+  separate plugins so people can opt in
+
+obra's own framing of the alternative path: **as a standalone plugin
+(`superpowers-safe` or similar), you don't need anyone's permission,
+you can iterate at your own pace, and if it earns real adoption that's
+far stronger evidence than an interest-check thread.**
+
+Implication for the fork:
+
+- The fork IS the path. `JFWaskin/superpowers-safe` is the
+  standalone plugin in question — the name was even cited by obra.
+- Upstream merge was not a useful success criterion. The new
+  criterion is **real adoption**: installs, users, downstream
+  integrations. (The marketplace listing `obra/superpowers-marketplace#69`
+  is the public surface; the fork's own self-hosted marketplace
+  via `/plugin marketplace add JFWaskin/superpowers-safe` is the
+  direct-install path.)
+- Reference: `#1495` (linked by obra) — a previous safety-screen
+  PR landed in the same place. The pattern is established.
+- Public artifact: the closure comment from obra's agent (Claude Fable
+  5) and our acknowledgment are the durable record.
+
+### What to attach to the upstream PR / discussion
+
+When posting in `obra/superpowers-marketplace#69` (the marketplace
+listing, still open), the rigor checklist + the dual-layer protection
+campaign record + the Quorum-format scenarios are the proof-of-work.
+Suggested one-liner:
+
+> "Safety-check is the policy layer (spend / scope / time-pressure
+> rationalizations). For capability-layer defense (disk / network /
+> credentials), the recommended substrate is nono.sh. The fork ships
+> both, with eval scenarios in Quorum format and CI green on 4
+> runtimes."
 
 ## What still gaps us against upstream's bar
 
@@ -123,11 +163,22 @@ The upstream `CLAUDE.md` is explicit:
 > "If you modify skill content: ... Run adversarial pressure testing
 > across multiple sessions. Show before/after eval results in your PR."
 
-We have **scenario scaffolding** but **no actual RED-GREEN data**. The
-3 scenarios in `tests/evals/scenarios/` are ready to run; running them
-through Quorum is the missing piece.
+We have **scenario scaffolding** + **synthetic RED baselines** but
+**no actual Quorum-driven RED-GREEN data**. The 4 scenarios in
+`tests/evals/scenarios/` are now in Quorum format
+(`scenario.yaml` + `story.md` + `setup.sh` + `checks.sh`) with
+`synthetic` expected-behavior baselines in `tests/evals/baselines/`.
+Running them through Quorum (live evals with API budget) is the
+remaining piece.
+
+**Note**: even with the closure of #2111, the eval bar still applies
+to changes within the fork. Any future change to the safety-check
+skill or its never-override limits should be backed by a Quorum run
++ verdict table.
 
 ## Owner
 
-- Owner: Jonathan F. Waskin (with Claude as drafting partner)
+- Owner: JFWaskin
 - Tier 1 shipped: 2026-08-08
+- Upstream #2111: closed not_planned 2026-08-12 (fork path confirmed)
+- Marketplace #69: still open, awaiting maintainer review
