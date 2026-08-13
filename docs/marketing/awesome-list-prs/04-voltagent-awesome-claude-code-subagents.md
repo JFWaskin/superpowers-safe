@@ -19,7 +19,7 @@ mismatch: the list collects subagent `.md` definitions, and we were
 shipping a safety **skill** (a different unit). The chosen path was
 to refactor first, then PR.
 
-The refactor is done. `fork-superpowers/safety-check.md` now ships
+The refactor is done. `fork/safety-check.md` now ships
 as a sibling to the original `skills/safety-check/SKILL.md`, written
 to the standard subagent template (frontmatter + When invoked + Gate
 checklists + Communication Protocol + Development Workflow + Hard
