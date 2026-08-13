@@ -27,9 +27,9 @@ Live in `evals/`. Drill is the harness; scenarios live at `evals/scenarios/*.yam
 
 ```bash
 cd evals
-uv sync --extra dev
+bun install
 export ANTHROPIC_API_KEY=sk-...
-uv run drill run triggering-test-driven-development -b claude
+bun run quorum run triggering-test-driven-development -b claude
 ```
 
 Drill scenarios are slow (3-30+ minutes each) and run real LLM sessions. They are not part of CI today; the natural follow-up is a tiered model (fast subset on PR, full sweep nightly + on-demand).
