@@ -1,67 +1,32 @@
 # Awesome-list PR drafts
 
-> Open-source curated lists are the single highest-leverage way to get
-> discovered. Aim for 3–5 of these in your first week.
+> Per-list, fire-ready drafts live in `awesome-list-prs/`. The
+> 14-day / 100-star / category rules mean **not all 4 can fire now**;
+> each draft's header says `Status: FIRE NOW` or `STAGED — DO NOT
+> FIRE` with the reason.
 
-## Where to submit
+## Per-list drafts (in `awesome-list-prs/`)
 
-In rough order of expected traffic for an AI agent skill:
+| File | Target | Status | Reason |
+|------|--------|--------|--------|
+| `01-e2b-dev-awesome-ai-agents.md` | e2b-dev/awesome-ai-agents (29k) | **FIRE NOW** | broadest fit; AI agent safety is on-topic |
+| `02-shubhamsaboo-awesome-llm-apps.md` | Shubhamsaboo/awesome-llm-apps (132k) | **FIRE NOW** | pitch explicitly says "agent skills"; high leverage if accepted |
+| `03-hesreallyhim-awesome-claude-code.md` | hesreallyhim/awesome-claude-code (52k) | **STAGED** | requires 14 days old OR 100 stars; we have 5 days + 1 star. Wait until **2026-08-22** or 100 stars |
+| `04-voltagent-awesome-claude-code-subagents.md` | VoltAgent/awesome-claude-code-subagents (24k) | **STAGED** | collects subagent `.md` definitions; we ship a safety skill, different category. Skip unless we refactor safety-check into a subagent |
 
-1. **[hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)** — 24k+ stars, the canonical list. **Highest priority.**
-2. **[jnmcfish/awesome-claude-code](https://github.com/jnmcfish/awesome-claude-code)** — second canonical list.
-3. **[awesome-ai-agents](https://github.com/topics/awesome-ai-agents)** topic on GitHub
-4. **[awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers)** if you ever ship an MCP server
-5. **[awesome-llm-apps](https://github.com/Shubhamsaboo/awesome-llm-apps)** (94k stars — high traffic but less targeted)
-6. **[awesome-ai-safety](https://github.com/awesome-ai-safety/awesome-ai-safety)** if it exists
-7. **[anthropics/skills](https://github.com/anthropics/skills)** — Anthropic's own skills repo. Don't open a PR; if relevant, file an issue pointing to your fork as a "safety-hardened variant".
+## What was in the original draft (now superseded)
 
----
+The original `awesome-list-pr.md` referenced `jnmcfish/awesome-claude-code`
+and `awesome-ai-safety/awesome-ai-safety` — both 404 now. The list of
+candidate awesome-lists has shifted; the per-list drafts above
+reflect the current state (2026-08-13).
 
-## PR template (copy-paste)
+## Generic PR template (kept for the "what works" / "what doesn't" guidance)
 
-```markdown
-### Adding `JFWaskin/superpowers-safe`
+The per-list drafts already include full PR bodies. The notes below
+are still useful for any future submissions.
 
-- **Repo:** https://github.com/JFWaskin/superpowers-safe
-- **What it is:** A safety-hardened fork of `obra/superpowers`. The
-  upstream skills library plus a **mandatory 5-gate safety preflight**
-  that runs before any other skill — defends against destructive bash,
-  runaway subagents, resource exhaustion, secret leaks, and scope creep.
-- **Why it belongs here:** the upstream is great but a single
-  `rm -rf` or runaway subagent loop can wreck the box. This fork
-  adds a hard, in-skill gate. The skills library itself refuses to
-  start any non-trivial work without it.
-- **Upstream's position (2026-08-12):** the maintainer of
-  `obra/superpowers` reviewed the proposal
-  ([#2111](https://github.com/obra/superpowers/issues/2111)) and
-  redirected to the standalone-plugin path — i.e. this fork. They
-  explicitly said the three CLAUDE.md rules apply (zero-dep,
-  fork-derived features don't go upstream, opt-in plugins) and
-  that "if it earns real adoption that's far stronger evidence
-  than an interest-check thread."
-- **Stars / activity:** <fill in> stars, latest release v6.3.0,
-  actively maintained, CI green on 4 runtimes (Test, Codex smoke,
-  OpenCode smoke, Kimi smoke).
-- **Pressure scenarios:** 4 scenarios in Quorum format
-  (`tests/evals/scenarios/`) with synthetic RED baselines
-  (`tests/evals/baselines/`). Coverage: out-of-cwd `rm -rf`, sudo
-  invocations, public-registry publish, pipe-to-shell install.
-- **Defense in depth:** documented dual-layer experiment
-  (`docs/experiments/dual-layer-protection.md`) showing
-  `safety-check` (policy) and `nono.sh` (kernel sandbox) catch
-  disjoint threat surfaces. Together: defense in depth; neither
-  alone: gaps remain.
-- **License:** MIT (inherited from upstream)
-- **Maintainer:** @JFWaskin (Huaqiao University)
-- **Caveats / context:** This is a fork. The upstream is
-  `obra/superpowers`; this fork is byte-identical to upstream on
-  skills and adds a `<MANDATORY-SAFETY-GATE>` block plus one new
-  `safety-check` skill.
-```
-
----
-
-## Subject lines that work
+### Subject lines that work
 
 - `Add JFWaskin/superpowers-safe — safety-hardened fork of obra/superpowers`
 - `Add JFWaskin/superpowers-safe (mandatory 5-gate preflight)`
@@ -69,18 +34,14 @@ In rough order of expected traffic for an AI agent skill:
 
 Avoid: "Please add my repo" / "Awesome list addition" / "Cool new project".
 
----
-
-## What to expect
+### What to expect
 
 - Most maintainers review PRs within 1–7 days. Some take weeks.
 - A few maintainers will reject forks. That's normal. Move on.
 - If rejected, the maintainer may say "submit to a different list" —
   read carefully and respond politely.
 
-## After acceptance
+### After acceptance
 
-- Star the awesome list and watch it for future PRs (you may want to
-  submit your own updates later).
-- Add the awesome list to `docs/marketing/README.md` so you remember
-  which ones accepted you.
+- Star the awesome list and watch it for future PRs.
+- Add the awesome list to `docs/marketing/README.md` "Accepted on" log.
