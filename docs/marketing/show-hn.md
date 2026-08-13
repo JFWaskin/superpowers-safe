@@ -21,6 +21,35 @@ Alternatives:
 - **Show HN: superpowers-safe – Superpowers skills with a hard safety preflight before any task**
 - **Show HN: superpowers-safe – Drop-in safety layer for Claude Code / Codex / Gemini agents**
 
+## Update 2026-08-13: upstream confirmed the standalone-plugin path
+
+`obra/superpowers#2111` (the interest-check thread) was closed by
+@obra on 2026-08-12 with `state_reason: not_planned` and a friendly
+note: the gate doesn't belong in core per the three CLAUDE.md rules
+(zero-dep, fork-derived features don't go upstream, opt-in plugins).
+The fork IS the standalone plugin obra cited by name.
+
+Implication for anyone reading this Show HN: the maintainer
+**explicitly said** the standalone-plugin path is the right shape,
+and adoption is a better evidence metric than an interest-check
+thread. If you're reading this, you're part of that adoption
+evidence. So: try it, break it, file issues, write a better gate,
+fork the fork — the path is open.
+
+The fork has also grown since the original draft:
+
+- **4 pressure-test scenarios in Quorum format** (`tests/evals/scenarios/`)
+  with synthetic RED baselines at `tests/evals/baselines/`. Each
+  scenario has `scenario.yaml` (metadata) + `story.md` (pressure
+  narrative + acceptance criteria) + `setup.sh` (fixture) + `checks.sh`
+  (deterministic assertions).
+- **Dual-layer protection campaign record**
+  (`docs/experiments/dual-layer-protection.md`): a 13-action test
+  showing that `safety-check` (the policy layer) and `nono.sh` (a
+  kernel-level capability sandbox) catch **disjoint** threat
+  surfaces. The two together are defense in depth; neither alone
+  is sufficient.
+
 ## Post body
 
 ```text

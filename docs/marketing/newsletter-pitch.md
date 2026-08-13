@@ -30,39 +30,48 @@
 
 ## The pitch email
 
-> **Subject:** Story idea: mandatory in-skill safety preflight for AI coding agents (open source, with eval protocol)
+> **Subject:** Story idea: in-skill safety preflight + dual-layer (skill + kernel sandbox) experiment for AI coding agents
 >
 > Hi [name],
 >
 > I'm the maintainer of `superpowers-safe`, a fork of `obra/superpowers`
 > that adds a mandatory 5-gate safety preflight before any non-trivial
-> AI coding task. The interesting angle: the gate is enforced
-> **in-skill**, not via a hook, and there's a RED-GREEN-REFACTOR
-> protocol so any change to the gate has to come with pressure-test
-> evidence.
+> AI coding task. Upstream reviewed the proposal this week and
+> redirected to the standalone-plugin path — i.e. this fork is the
+> answer, and adoption is the metric that matters going forward.
 >
-> Two angles that might be a fit for [publication]:
+> Three angles that might be a fit for [publication]:
 >
 > 1. **The methodology.** The eval protocol (`docs/eval-protocol.md`)
 >    is a concrete, working example of how a safety change to a
->    behavior-shaping skill library ships with evidence. There are
->    very few public examples of this in the AI coding space.
+>    behavior-shaping skill library ships with evidence. 4 pressure-
+>    test scenarios in Quorum format (yaml + story + setup + checks)
+>    with synthetic RED baselines at `tests/evals/baselines/`. There
+>    are very few public examples of this in the AI coding space.
 >
-> 2. **The failure mode.** A `subagent-driven-development` run that
+> 2. **The dual-layer experiment.** A 13-action campaign record
+>    (`docs/experiments/dual-layer-protection.md`) showing that
+>    `safety-check` (the policy layer) and `nono.sh` (a kernel-level
+>    capability sandbox) catch **disjoint** threat surfaces. Together
+>    they form defense in depth; neither alone is sufficient. The
+>    record also documents what each layer fails to catch (real gaps,
+>    not papered over).
+>
+> 3. **The failure mode.** A `subagent-driven-development` run that
 >    fires off 30 subagents at once, with full Bash, on a machine
 >    with real data. The story of what happens when one of them
->    decides `rm -rf /var/log` is a good idea — and how a
->    preflight would have stopped it.
+>    decides `rm -rf /var/log` is a good idea — and how a preflight
+>    would have stopped it.
 >
 > Repo: https://github.com/JFWaskin/superpowers-safe
 > Spec: https://github.com/JFWaskin/superpowers-safe/blob/dev/docs/safety-gate.md
 > Eval protocol: https://github.com/JFWaskin/superpowers-safe/blob/dev/docs/eval-protocol.md
+> Dual-layer campaign: https://github.com/JFWaskin/superpowers-safe/blob/dev/docs/experiments/dual-layer-protection.md
 >
 > Happy to do an interview, write a guest post, or share pressure-test
 > data. No exclusivity ask.
 >
-> — Jonathan Waskin
-> Huaqiao University
+> — JFWaskin
 > @JFWaskin on GitHub
 
 ## What to attach / not attach

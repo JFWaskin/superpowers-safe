@@ -3,6 +3,22 @@
 > Ready-to-use drafts and checklists for promoting `superpowers-safe` to
 > the people who'd benefit from it. Edit the placeholders, then send.
 
+## Status (2026-08-13)
+
+Upstream's stance on the safety-check proposal: **standalone-plugin
+path is the right one**. `obra/superpowers#2111` was closed by
+@obra on 2026-08-12 with `state_reason: not_planned` (policy, not
+quality) and a clear redirect: the fork IS the path. Adoption is
+the metric that matters now, not upstream blessings.
+
+Drafts below have been updated to reflect this. The x-thread tweet 10
+(no longer "if upstream absorbs, I'd happily delete the fork") and the
+show-hn / reddit / awesome-list / newsletter / influencer-DM drafts all
+add a "status" paragraph naming the closure and pointing at the
+dual-layer campaign record.
+
+If you have prior copies of these drafts cached, refresh.
+
 ## Files
 
 | File | What it's for |

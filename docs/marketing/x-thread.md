@@ -101,9 +101,13 @@
 >
 > Maintainer: @JFWaskin (Huaqiao University)
 >
-> This is a community fork, not endorsed by Anthropic or obra. If
-> upstream wants to absorb the safety gate, I'd happily delete the
-> fork.
+> Upstream reviewed the proposal and redirected to the standalone-
+> plugin path — the fork is the answer, not a stopgap. Adoption is
+> the metric that matters; upstream blessings are not.
+>
+> The fork ships with: a dual-layer campaign record
+> (safety-check + nono.sh = disjoint threat surfaces), 4 pressure-
+> test scenarios in Quorum format, and CI green on 4 runtimes.
 
 ## Posting tips
 

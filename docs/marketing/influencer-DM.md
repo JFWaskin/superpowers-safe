@@ -26,9 +26,10 @@ Good handles to start with (this is an example list — find your own):
 ## The DM (≤ 280 chars / 5 lines)
 
 > Hey [name] — I forked obra/superpowers and added a mandatory
-> 5-gate safety preflight (in-skill, not just a hook). Same skills,
-> one new gate. The eval protocol forces RED-GREEN-REFACTOR for any
-> gate change.
+> 5-gate safety preflight (in-skill, not just a hook). Upstream
+> reviewed it and confirmed the standalone-plugin path; the
+> fork is the answer. Eval protocol forces RED-GREEN-REFACTOR
+> for any gate change. 4 scenarios in Quorum format now.
 >
 > Repo: [LINK]
 > Spec: [LINK to docs/safety-gate.md]

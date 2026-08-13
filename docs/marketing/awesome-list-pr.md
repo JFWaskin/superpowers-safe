@@ -31,8 +31,26 @@ In rough order of expected traffic for an AI agent skill:
   `rm -rf` or runaway subagent loop can wreck the box. This fork
   adds a hard, in-skill gate. The skills library itself refuses to
   start any non-trivial work without it.
+- **Upstream's position (2026-08-12):** the maintainer of
+  `obra/superpowers` reviewed the proposal
+  ([#2111](https://github.com/obra/superpowers/issues/2111)) and
+  redirected to the standalone-plugin path — i.e. this fork. They
+  explicitly said the three CLAUDE.md rules apply (zero-dep,
+  fork-derived features don't go upstream, opt-in plugins) and
+  that "if it earns real adoption that's far stronger evidence
+  than an interest-check thread."
 - **Stars / activity:** <fill in> stars, latest release v6.3.0,
-  actively maintained, CI green.
+  actively maintained, CI green on 4 runtimes (Test, Codex smoke,
+  OpenCode smoke, Kimi smoke).
+- **Pressure scenarios:** 4 scenarios in Quorum format
+  (`tests/evals/scenarios/`) with synthetic RED baselines
+  (`tests/evals/baselines/`). Coverage: out-of-cwd `rm -rf`, sudo
+  invocations, public-registry publish, pipe-to-shell install.
+- **Defense in depth:** documented dual-layer experiment
+  (`docs/experiments/dual-layer-protection.md`) showing
+  `safety-check` (policy) and `nono.sh` (kernel sandbox) catch
+  disjoint threat surfaces. Together: defense in depth; neither
+  alone: gaps remain.
 - **License:** MIT (inherited from upstream)
 - **Maintainer:** @JFWaskin (Huaqiao University)
 - **Caveats / context:** This is a fork. The upstream is

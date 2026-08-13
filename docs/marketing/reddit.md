@@ -22,14 +22,23 @@ Do **not** post to all of these in one day. Pick 1–2 per week.
 
 ## r/ClaudeAI draft
 
-**Title:** I built a mandatory 5-gate safety preflight for Claude Code (fork of obra/superpowers) — would love your pressure-test scenarios
+**Title:** I built a mandatory 5-gate safety preflight for Claude Code (fork of obra/superpowers) — upstream confirmed the standalone-plugin path
 
 **Body:**
 
 ```text
-I've been using obra/superpowers heavily and got nervous when I saw
-`subagent-driven-development` running for an hour with full Bash
-access. So I forked it and added a mandatory preflight.
+Update: the maintainer of obra/superpowers reviewed this proposal
+(#2111) and redirected to the standalone-plugin path — i.e. this
+fork. They explicitly said the three CLAUDE.md rules (zero-dep,
+fork-derived features don't go upstream, opt-in plugins) apply, and
+that "if it earns real adoption that's far stronger evidence than
+an interest-check thread." So the fork is the answer now, not a
+stopgap.
+
+Original post: I've been using obra/superpowers heavily and got
+nervous when I saw `subagent-driven-development` running for an
+hour with full Bash access. So I forked it and added a mandatory
+preflight.
 
 The preflight runs before any non-trivial skill (including
 subagents dispatched mid-work) and refuses to start work if any of
@@ -45,19 +54,27 @@ these 5 gates fail:
 The gate is enforced by a `<MANDATORY-SAFETY-GATE>` block in
 `using-superpowers/SKILL.md`, not by a hook the agent can ignore.
 
-I documented the full spec and a RED-GREEN-REFACTOR eval protocol
-so changes to the gate have to come with pressure-test evidence.
+Since the original draft, the fork has also grown:
+
+- 4 pressure-test scenarios in Quorum format
+  (`tests/evals/scenarios/`), each with a synthetic RED baseline
+  in `tests/evals/baselines/`. The Quorum format is yaml + story
+  + setup + checks — same structure upstream uses for their own
+  eval scenarios.
+- A dual-layer campaign record
+  (`docs/experiments/dual-layer-protection.md`): 13-action test
+  showing that `safety-check` (policy) and `nono.sh` (kernel
+  capability sandbox) catch disjoint threat surfaces. Together
+  they form defense in depth; neither alone is sufficient.
 
 Repo: https://github.com/JFWaskin/superpowers-safe
+Spec: https://github.com/JFWaskin/superpowers-safe/blob/dev/docs/safety-gate.md
 
 What I'd love from you:
   - Pressure-test scenarios I haven't covered
   - Gates that should never be overridable (already have 10; want more)
   - Use cases where this would get in the way (I want to know the
     failure modes before they happen to me)
-
-Not trying to shill — genuinely want to know if the "mandatory
-in-skill" model is the right shape, or if it should be hook-only.
 ```
 
 ---
