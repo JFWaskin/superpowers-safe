@@ -263,3 +263,11 @@ Together they form defense in depth: a bypass of the reasoning layer is still bl
 - **Recovery flows** (incident-responder, sre-engineer): share the recovery procedure above; coordinate kills, do not run them unilaterally
 
 Always prioritize halting over proceeding. The cost of a halt is one round-trip with the human; the cost of a bypass can be unrecoverable.
+
+## See also
+
+- [`../skills/safety-check/SKILL.md`](../skills/safety-check/SKILL.md) —
+  the canonical **skill form** of the same 5 gates. The skill and the
+  subagent share gates, hard limits, and the substrate table; they
+  differ only in invocation surface (Skill vs Agent) and tool scoping.
+  When in doubt, start with the skill.

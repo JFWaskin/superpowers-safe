@@ -181,3 +181,12 @@ Together they form defense in depth: a bypass of the skill layer is
 still blocked at the kernel layer, and a bypass of the kernel layer
 (e.g. via an allow-listed tool) is still caught at the reasoning
 layer.
+
+## See also
+
+- [`fork/safety-check.md`](../../fork/safety-check.md) — same 5 gates
+  packaged as a **subagent definition** (Claude Code Agent invocation,
+  not a Skill invocation). Use this when you want isolated context,
+  tool scoping, or a vendor-neutral copy for the wider ecosystem
+  (e.g. submission to upstream subagent collections). The skill form
+  here is the canonical home; the subagent form is the wrapper.
