@@ -167,10 +167,24 @@ they form a sturdier default than either alone.
   find the sibling without grep'ing for the path. The two forms
   share gates, hard limits, and the substrate table; they differ
   only in invocation surface and tool scoping.
+- **Iteration 3 (both, runtime-agnosticism):** the previous
+  iterations were vendor-neutral on products, but the body still
+  named a single agent runtime in the opening paragraph
+  ("inspect what a Claude Code session is about to do"). The fork
+  ships plugins for 8+ agent runtimes; the subagent form's value
+  prop is the runtime-agnostic bridge. Replaced the single-runtime
+  reference with the generic "agent session" in both copies. Also
+  clarified the SKILL.md cross-link to make it explicit that the
+  skill form is single-runtime (it lives in `skills/`, one
+  runtime's convention) while the subagent form is the portable
+  bridge that works across the runtimes the fork supports.
+  No version bump on the upstream side.
 
 The fork copy of the subagent intentionally diverges from the
-upstream PR copy on two points: (1) the upstream copy has the
-shorter description, and (2) the upstream copy drops the
-"Ralph-style" product mention. These are deliberate concessions to
-the upstream maintainers' rules and do not affect the fork's
-local-fidelity.
+upstream PR copy on three points: (1) the upstream copy has the
+shorter description, (2) the upstream copy drops the "Ralph-style"
+product mention, and (3) the upstream copy drops the
+single-runtime session reference. All three are deliberate
+concessions — two to the upstream maintainers' vendor-neutrality
+rule, one to the format's portability — and do not affect the
+fork's local-fidelity.
