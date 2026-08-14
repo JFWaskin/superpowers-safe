@@ -12,7 +12,7 @@
 | `01-e2b-dev-awesome-ai-agents.md` | e2b-dev/awesome-ai-agents (29k) | **FIRE NOW** | broadest fit; AI agent safety is on-topic |
 | `02-shubhamsaboo-awesome-llm-apps.md` | Shubhamsaboo/awesome-llm-apps (132k) | **FIRE NOW** | pitch explicitly says "agent skills"; high leverage if accepted |
 | `03-hesreallyhim-awesome-claude-code.md` | hesreallyhim/awesome-claude-code (52k) | **STAGED** | requires 14 days old OR 100 stars; we have 5 days + 1 star. Wait until **2026-08-22** or 100 stars |
-| `04-voltagent-awesome-claude-code-subagents.md` | VoltAgent/awesome-claude-code-subagents (24k) | **STAGED** | collects subagent `.md` definitions; we ship a safety skill, different category. Skip unless we refactor safety-check into a subagent |
+| `04-voltagent-awesome-claude-code-subagents.md` | VoltAgent/awesome-claude-code-subagents (24k) | **FIRED** | refactored safety-check into a subagent `.md` per their template; category `04-quality-security`; PR link in the draft |
 
 ## What was in the original draft (now superseded)
 

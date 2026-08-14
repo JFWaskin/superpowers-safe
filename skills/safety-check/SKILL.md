@@ -181,3 +181,16 @@ Together they form defense in depth: a bypass of the skill layer is
 still blocked at the kernel layer, and a bypass of the kernel layer
 (e.g. via an allow-listed tool) is still caught at the reasoning
 layer.
+
+## See also
+
+- [`fork/safety-check.md`](../../fork/safety-check.md) — same 5 gates
+  packaged as a **subagent definition** (an Agent-style invocation
+  with isolated context, not a Skill invocation). The skill form
+  here is Claude-Code-specific (it lives in `skills/`); the
+  subagent form is runtime-agnostic and works across Claude Code,
+  Codex, Cursor, and the other runtimes that ship with this fork
+  (`.codex-plugin/`, `.cursor-plugin/`, `.devin-plugin/`,
+  `.hermes-plugin/`, `.kimi-plugin/`, `.opencode/`, `.pi/`).
+  Use the subagent form when you want isolated context, tool
+  scoping, or a portable copy for an upstream subagent collection.
