@@ -185,8 +185,12 @@ layer.
 ## See also
 
 - [`fork/safety-check.md`](../../fork/safety-check.md) — same 5 gates
-  packaged as a **subagent definition** (Claude Code Agent invocation,
-  not a Skill invocation). Use this when you want isolated context,
-  tool scoping, or a vendor-neutral copy for the wider ecosystem
-  (e.g. submission to upstream subagent collections). The skill form
-  here is the canonical home; the subagent form is the wrapper.
+  packaged as a **subagent definition** (an Agent-style invocation
+  with isolated context, not a Skill invocation). The skill form
+  here is Claude-Code-specific (it lives in `skills/`); the
+  subagent form is runtime-agnostic and works across Claude Code,
+  Codex, Cursor, and the other runtimes that ship with this fork
+  (`.codex-plugin/`, `.cursor-plugin/`, `.devin-plugin/`,
+  `.hermes-plugin/`, `.kimi-plugin/`, `.opencode/`, `.pi/`).
+  Use the subagent form when you want isolated context, tool
+  scoping, or a portable copy for an upstream subagent collection.
