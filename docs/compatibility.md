@@ -17,7 +17,6 @@
 |---|---|---|---|---|---|
 | **Claude Code** | ✅ | ✅ | ✅ | ✅ | Primary runtime. Full test path. The `MANDATORY-SAFETY-GATE` is loaded by SessionStart hook. `safety-check` skill auto-loads. Hook blocks at the tool layer. |
 | **Gemini CLI** | ✅ | ✅ | ✅ | ✅ | `gemini skills link` over 15 skills including safety-check. Gate's resource check (`vm_stat`) is macOS-specific — would need adjustment on Linux. |
-| **DeepSeek Harness** | 🟡 | 🟡 | 🟡 | ✅ | New runtime, 2026-08-15 release. Not installed on test host. Bridge in `fork/deepseek-harness-bridge/` (Cordis plugin + `cordis.yml` overlay + Claude-Code-shaped `hooks.json`). Lowest-friction install: `dsh --profile web --patch ./fork/deepseek-harness-bridge/cordis.yml`. Prereq analysis at `docs/upstream/deepseek-harness-analysis.md`. Upstream-PR inquiry to `obra/superpowers` pending — not claiming compatibility here until the ask-PR model resolves. |
 | **Codex CLI** | ❌ | 🟡 | 🟡 | ✅ | Codex CLI not installed on test host. Manifest validated; install path requires OpenAI's plugin publish flow. |
 | **Cursor** | ❌ | 🟡 | 🟡 | ✅ | Cursor not installed on test host. Plugin auto-discovered via `.cursor-plugin/plugin.json`. |
 | **Devin CLI** | ❌ | 🟡 | 🟡 | ✅ | Devin not installed on test host. `.devin-plugin/plugin.json` is auto-discovered; Devin's own system prompt already documents subagent / todo / question tools, so no tool-mapping scaffold is required. CI test in `tests/devin/test-devin-plugin.sh`. |
@@ -29,6 +28,7 @@
 | **Factory Droid** | ❌ | 🟡 | 🟡 | ✅ | Not installed. Droid CLI install path documented but not exercised. |
 | **Antigravity** | ❌ | 🟡 | 🟡 | ✅ | Not installed. `agy plugin install` documented but not exercised. |
 | **Hermes** | ❌ | 🟡 | 🟡 | ✅ | Not installed. `.hermes-plugin/plugin.yaml` validated. |
+| **DeepSeek Harness** | ❌ | 🟡 | 🟡 | 🟡 | Not installed on this host. **Implemented via `fork/deepseek-harness-bridge/`, not yet an upstream PR.** The bridge is two paths: (1) a `cordis.yml` overlay that points the shipped `@deepseek-ai/dsh-skill-filesystem` provider at `./superpowers/skills` via `customSkillDirs` plus `dsh-hooks-claude-code` for the `SessionStart` bootstrap, and (2) a custom `ctx.skills` provider in `src/index.ts` that reuses the same `SKILL.md` files under a fork-owned provider name. Plugin-manifest is `🟡` rather than `✅` because the bridge is fork-local work — it has not gone through the same upstream-manifest linting the other rows have. Companion analysis: [`docs/upstream/deepseek-harness-analysis.md`](upstream/deepseek-harness-analysis.md). |
 | **Augment / Continue / Cline / Aider** | 🚫 | 🚫 | 🚫 | 🚫 | Not supported. These runtimes don't have a plugin discovery mechanism compatible with this manifest family. Use at your own risk. |
 
 ## How "tested" is determined

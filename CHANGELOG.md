@@ -6,6 +6,45 @@ is tracked separately; see [obra/superpowers Releases](https://github.com/obra/s
 
 ---
 
+## [Unreleased] — DeepSeek Harness bridge (2026-08-15)
+
+### Added
+
+- **`fork/deepseek-harness-bridge/`** — Cordis plugin + `cordis.yml`
+  overlay that wires the existing `superpowers/skills/*/SKILL.md`
+  files into the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
+  via its `ctx.skills` provider registry, plus a
+  Claude-Code-compatible `hooks.json` for `dsh-hooks-claude-code`.
+  Two install paths ship in the same directory: (1) a
+  lowest-friction `cordis.yml` that points the shipped
+  `@deepseek-ai/dsh-skill-filesystem` provider at
+  `./superpowers/skills` via `customSkillDirs`, and (2) a custom
+  `BridgeSkillProvider` in `src/index.ts` that reuses the same
+  `SKILL.md` files under a fork-owned provider name
+  (`superpowers-safe-bridge`). The bridge is fork-only work;
+  it is not proposed upstream yet — see its own
+  `fork/deepseek-harness-bridge/README.md` for the ask-PR
+  checklist. Companion analysis:
+  [`docs/upstream/deepseek-harness-analysis.md`](docs/upstream/deepseek-harness-analysis.md).
+- **`fork/README.md`** — convention doc for `fork/`-directory
+  artifacts (work-in-progress, fork adaptations, integration glue
+  that lives in this fork but not in upstream `obra/superpowers`).
+- **`docs/compatibility.md`** — added a `DeepSeek Harness` row
+  to the runtime matrix (status: implemented via
+  `fork/deepseek-harness-bridge/`, not yet an upstream PR).
+- **`tests/evals/scenarios/deepseek-harness/`** — Quorum eval
+  scenario that exercises the DeepSeek-specific
+  whitespace-bounded `/<name>` user-invocation regex
+  (`/(^|\s)\/([a-z0-9]+(?:-[a-z0-9]+)*)(?=\s|$)/g` per
+  `packages/skill/tool-skill/src/index.ts` in the upstream
+  DeepSeek harness). Validates that (a) every superpowers
+  skill name is kebab-case and matches the regex, (b) every
+  description fits the 500-char `catalogDescriptionMaxLength`
+  cap, (c) `/usr/bin/ls` is not parsed as a skill gesture
+  (the left whitespace-boundary check), (d) `/UsingSuperpowers`
+  is not parsed as a gesture (the kebab-case check), and
+  (e) arguments after the name are passed through as prose.
+
 ## [Unreleased] — Upstream sync (2026-08-13)
 
 ### Changed

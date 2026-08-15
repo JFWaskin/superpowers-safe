@@ -19,15 +19,17 @@ passes are green.
 - **Cordis plugin (`src/index.ts`)** that registers a
   `ctx.skills` provider reusing the existing
   `superpowers/skills/<name>/SKILL.md` files. Discovers one
-  level deep, parses YAML frontmatter, loads bodies on demand.
-  Provider name `superpowers-safe-bridge`; default rank `350`
-  (below `customSkillDirs` at 300 — wait, that's the other
-  way; the lower number wins within a single scope layer, so
-  rank 350 actually loses to rank 300. The README documents
-  this as a deliberate trade-off: a custom-root skill set by
-  the user via `customSkillDirs` should outrank the bridge's
-  fixed superpowers skills. Re-check this on first eval
-  pass and bump if it causes confusion.)
+  level deep, parses YAML frontmatter, loads bodies on
+  demand. Provider name `superpowers-safe-bridge`; default
+  rank `350` (deliberately *above* the `custom` rank `300`
+  the shipped filesystem provider uses for `customSkillDirs`
+  — lower rank wins within a layer, so the user's own
+  `customSkillDirs` skills always outrank the bridge's
+  fixed superpowers skills. The two paths are designed to be
+  mutually exclusive in practice: a user picks
+  `customSkillDirs` OR the custom provider, not both, so the
+  rank ordering only matters if a user accidentally registers
+  both.)
 - **`cordis.yml`** lowest-friction overlay that uses the
   shipped `@deepseek-ai/dsh-skill-filesystem` provider with
   `customSkillDirs: ['./superpowers/skills']` and adds
