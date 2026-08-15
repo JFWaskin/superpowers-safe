@@ -1,0 +1,65 @@
+# Lowest-friction DeepSeek Harness patch for superpowers-safe.
+#
+# Use with:
+#   dsh --profile web --patch ./fork/deepseek-harness-bridge/cordis.yml
+#
+# What this patch does (and only this):
+#
+#   1. Adds the superpowers fork's `skills/` directory to the shipped
+#      `@deepseek-ai/dsh-skill-filesystem` provider's `customSkillDirs`.
+#      That puts all 15 superpowers skills at rank 300 ("custom") —
+#      after the project roots (rank 100 / 200) and before the user
+#      roots (rank 400 / 500), so user-shadowed skills still win on
+#      duplicate names.
+#
+#   2. Adds the `@deepseek-ai/dsh-hooks-claude-code` bridge with
+#      `configPath: ./hooks.json` (this directory). The bridge maps
+#      the Claude-Code-shaped SessionStart hook onto the harness's
+#      `agent/session-start` (emit) point, with `additionalContext`
+#      routed to `agent.inject()`. Our existing `hooks/session-start`
+#      script already emits the JSON shape the bridge consumes
+#      (it falls through to the SDK-standard `additionalContext`
+#      branch when none of the cursor/claude/copilot env vars are
+#      set, which is the case for `dsh`).
+#
+#   3. Disables the existing `skill-filesystem` row's default-root
+#      discovery for the project-side roots only, so the bridge's
+#      skills are the ones the model sees without competing with
+#      `.dsh/skills` or `.agents/skills` directories the user may
+#      also have. User-scope roots stay on so the user can still
+#      shadow a superpowers skill with their own.
+#
+# What this patch does NOT do (and why):
+#
+#   * It does not touch `dsh-approval` or `dsh-sandbox-policy`. The
+#     harness ships sensible defaults; the user's `settings.yaml`
+#     overrides them. The bridge's stance is "do not silently change
+#     the user's permission policy."
+#   * It does not write a `cordis_define` / `cordis_run` / etc. tool
+#     override. Self-modification is a differentiator we are not
+#     shipping in this port; add it later if a superpowers skill
+#     needs to register a skill on the fly.
+#   * It does not change any other row's `config` — patches replace
+#     whole configs, so adding a partial override would clobber
+#     the shipped defaults.
+
+# Skill discovery: ship the standard provider, but wire the
+# superpowers fork's skills directory into it. `customSkillDirs`
+# is a list of additional roots, not a replacement of the
+# default roots, so default-root discovery still happens.
+- id: skill-filesystem
+  config:
+    customSkillDirs:
+      - ./superpowers/skills
+
+# Hook bridge: load the Claude-Code-shaped `hooks.json` shipped
+# next to this file. The bridge consumes only `type: 'command'`
+# hooks; `http`, `mcp_tool`, `prompt`, and `agent` shapes are
+# parsed-and-skipped with a warning. `configPath` is process-level
+# (not per-session) — see the upstream
+# `TODO(per-session-hook-config)`.
+- id: hooks-claude-code
+  config:
+    configPath: ./fork/deepseek-harness-bridge/hooks.json
+    pluginRoot: ./
+    projectDir: ./

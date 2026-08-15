@@ -1,0 +1,65 @@
+# Headless profile patch for the superpowers-safe DeepSeek Harness bridge.
+#
+# Use with:
+#   dsh --profile headless --patch ./fork/deepseek-harness-bridge/examples/dsh-headless.yml
+#
+# What this patch does (and only this):
+#
+#   1. Configures the LLM adapter to use the DeepSeek API. Pin a model
+#      (or omit and let the host pick). Drop your DEEPSEEK_API_KEY in
+#      ~/.dsh/.credentials.yaml (owner-only).
+#   2. Adds the @deepseek-ai/dsh-skill-filesystem provider's `customSkillDirs`
+#      so the existing superpowers-safe skills are discovered.
+#   3. Adds the @deepseek-ai/dsh-hooks-claude-code bridge so the
+#      SessionStart hook injects the `using-superpowers` bootstrap.
+#   4. Adds a default "subagent" tool (continuable) and a "subagent_fork"
+#      tool (one-shot) so superpowers skills that name the
+#      "dispatch a subagent" action resolve to a working tool on
+#      DeepSeek.
+
+# DeepSeek API adapter. Edit your ~/.dsh/.credentials.yaml to set
+# DEEPSEEK_API_KEY. The adapter hot-reloads credentials on each request.
+- id: llm-deepseek
+  config:
+    thinking: enabled
+    reasoningEffort: max
+    models:
+      - id: deepseek-v4-flash
+      - id: deepseek-v4-pro
+
+# Skill discovery: ship the standard provider with the superpowers
+# skills directory added.
+- id: skill-filesystem
+  config:
+    customSkillDirs:
+      - ./superpowers/skills
+
+# Hook bridge: load the Claude-Code-shaped `hooks.json` shipped
+# in this directory. The bridge maps SessionStart onto
+# `agent/session-start` (emit) and additionalContext onto
+# `agent.inject()`.
+- id: hooks-claude-code
+  config:
+    configPath: ./fork/deepseek-harness-bridge/hooks.json
+    pluginRoot: ./
+    projectDir: ./
+
+# Subagent tools: the "dispatch a subagent" action in superpowers
+# skills names either of these (continuable for in-session async
+# work, fork for one-shot sub-tasks). See
+# `docs/upstream/deepseek-harness-analysis.md` §6 for the
+# distinction.
+- id: subagent
+  config:
+    provider: spawn
+    toolName: subagent
+    backgroundMode: continuable
+    maxDepth: 1
+
+- id: subagent-fork
+  config:
+    provider: fork
+    toolName: subagent_fork
+    backgroundMode: one-shot
+    enableRunInBackground: false
+    maxDepth: 1

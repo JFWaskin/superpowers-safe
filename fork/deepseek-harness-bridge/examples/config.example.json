@@ -1,0 +1,9 @@
+{
+  "$comment": "Example user configuration for the superpowers-safe DeepSeek Harness bridge. Copy to your profile directory (e.g. ~/.dsh/profiles/<name>/config.json) and edit. This is the bare minimum to get going; the harness ships sensible defaults for everything else (sandbox, approval, subagent, todo_write, etc.).",
+  "patch": "./fork/deepseek-harness-bridge/cordis.yml",
+  "dshHome": "~/.dsh",
+  "agentsHome": "~/.agents",
+  "customSkillDirs": [
+    "./superpowers/skills"
+  ]
+}

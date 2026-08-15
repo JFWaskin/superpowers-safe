@@ -1,0 +1,17 @@
+{
+  "$comment": "Claude-Code-shaped hooks.json for the DeepSeek Harness. Consumed by @deepseek-ai/dsh-hooks-claude-code. Only the `type: 'command'` SessionStart hook runs; other event types in this file are parsed-and-skipped with a warning if a future event lands here. The matcher 'startup|clear|compact' covers the three SessionStart variants Claude Code defines; the bridge maps all three to `agent/session-start` (emit). `additionalContext` is routed to `agent.inject()` into the new session. Our existing `hooks/session-start` script emits the harness-agnostic JSON shape (it falls through to the SDK-standard `additionalContext` branch when none of the cursor/claude/copilot env vars are set, which is the case for `dsh`). The `command` uses `${CLAUDE_PLUGIN_ROOT}` / `${CLAUDE_PROJECT_DIR}` because that is what the bridge substitutes at load time — the bridge's `pluginRoot` and `projectDir` config values supply the resolved paths. Do not switch to `${DSH_PLUGIN_ROOT}` — the bridge does not recognize that variable.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start",
+            "timeout": 30000
+          }
+        ]
+      }
+    ]
+  }
+}
