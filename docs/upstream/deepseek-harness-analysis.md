@@ -11,6 +11,11 @@
 > contract extracted by hand. The full Graphify JSON / `GRAPH_REPORT.md` can be
 > regenerated later with `graphify /tmp/deepseek-harness-analysis/ --no-viz`
 > if a more structured query interface is needed.
+>
+> **Update 2026-08-15:** A second pass used a **sliding-window iterative
+> method** — three depth graphs over the three highest-value sub-systems
+> (skill seam, hook subsystem, agent-presets) merged into a single
+> cross-seam graph. See [§9 Iterative depth graphs](#9-iterative-depth-graphs).
 
 ## 1. Overview
 
@@ -844,6 +849,509 @@ repo.
     turns will see a body digest change after compaction. **Action:**
     verify that the existing superpowers skills do not require
     body-version identity (they should not, but worth checking).
+
+## 9. Iterative depth graphs
+
+This section is the result of a **sliding-window, iterative** graphify pass.
+Instead of trying to build a single knowledge graph over the whole 6 990-file
+corpus, I picked three high-value sub-systems and built a focused depth graph
+for each (one pass per sub-system), then merged them into a single combined
+graph that shows the cross-seam signals. The skill / hook / preset sub-systems
+were chosen because they are the three surfaces a superpowers port actually
+has to integrate with.
+
+**Method per pass:** read the package's main `src/index.ts` (and one or two
+adjacent files), extract the exported types / interfaces, the events
+declared / listened on, the `inject` dependencies, and the `cordis.yml`
+registration shape. The depth graph is a Mermaid `flowchart` with the package
+boundary drawn as a `subgraph`, edges labeled by relationship (registers,
+emits, listens, imports, injects).
+
+Node shape conventions:
+- `[[ ]]` (subroutine shape) — Service / provider / consumer.
+- `([ ])` (stadium shape) — Event (declared or listened).
+- `[(...)]` (cylindrical) — File on disk.
+- `[/...\]` (parallelogram) — Data type / interface.
+
+### 9.1 — Pass 1: Skill capability seam (depth graph)
+
+```mermaid
+flowchart TB
+  subgraph SKILL["@deepseek-ai/dsh-skill (Service Definition)"]
+    REG["SkillRegistry extends Service<br/>ctx.skills"]
+    SUB_LAYER["SkillLayer per scope<br/>(host+per-scope)"]
+    REG --> SUB_LAYER
+    SUM[/"SkillSummary<br/>name, description, invocation"/]
+    CAND[/"SkillCandidate<br/>rank, locator, path, metadata"/]
+    DEF[/"SkillDefinition<br/>+ content (body)"/]
+    REG --> SUM
+    CAND --> SUM
+    DEF --> CAND
+    BASE[/"SkillResourceBase<br/>directory | url | opaque"/]
+    INV[/"SkillInvocationPolicy<br/>modelInvocable, userInvocable"/]
+    REG --> BASE
+    REG --> INV
+    REND["renderSkillContent(skill)<br/>canonical &lt;skill_content&gt; wrapper"]
+    REG --> REND
+    EVT1(["skills/change (emit)"])
+    REG --> EVT1
+  end
+
+  subgraph FS["@deepseek-ai/dsh-skill-filesystem (Provider)"]
+    FS_PROV["FileSystemSkillProvider<br/>implements SkillProvider"]
+    WATCH["SkillWatchManager<br/>Chokidar"]
+    DISCOVER["discoverRoot(root, ctx)"]
+    FS_PROV --> WATCH
+    FS_PROV --> DISCOVER
+    FS_PROV -. registerProvider .-> REG
+    WATCH -. invalidate() .-> REG
+  end
+
+  subgraph TOOL["@deepseek-ai/dsh-tool-skill (Consumer)"]
+    CAT["ctx.skills.snapshot() at agent/pre-step"]
+    RENDER_CAT["render &lt;available_skills&gt; catalog"]
+    TOOL_DEF["skill tool (defineTool)"]
+    INJECT["user-explicit /name injection"]
+    EVT2(["agent/pre-step (waterfall)"])
+    EVT3(["session/event skill-catalog (catalog-form)"])
+    EVT4(["session/event skill-invocation (instructions-form)"])
+    CAT --> RENDER_CAT
+    CAT --> EVT2
+    RENDER_CAT --> EVT3
+    TOOL_DEF --> REND
+    TOOL_DEF --> REND
+    INJECT --> REND
+    INJECT --> EVT4
+  end
+
+  ROOT1[("<root>/&lt;name&gt;/SKILL.md")]
+  ROOT2[("<root>/&lt;name&gt;.md")]
+  ROOT3[("$DSH_HOME/skills<br/>$DSH_AGENTS_HOME/skills")]
+  ROOT4[("Config.customSkillDirs")]
+  ROOT1 --> DISCOVER
+  ROOT2 --> DISCOVER
+  ROOT3 --> DISCOVER
+  ROOT4 --> DISCOVER
+  WATCH -. watches .-> ROOT1
+  WATCH -. watches .-> ROOT3
+  WATCH -. watches .-> ROOT4
+  TOOL_DEF -. ctx.skills.get(name) .-> REG
+
+  classDef svc fill:#dbeafe,stroke:#2563eb
+  classDef evt fill:#fef3c7,stroke:#b45309
+  classDef file fill:#e0e7ff,stroke:#4338ca
+  classDef type fill:#fce7f3,stroke:#be185d
+  class REG,FS_PROV,CAT,TOOL_DEF,INJECT,WATCH,DISCOVER,REND svc
+  class EVT1,EVT2,EVT3,EVT4 evt
+  class ROOT1,ROOT2,ROOT3,ROOT4 file
+  class SUM,CAND,DEF,BASE,INV type
+```
+
+**Key signals from Pass 1:**
+
+- The `SkillRegistry` is **layered** (host + per-scope, with `SkillLayer`
+  per scope). The same shape that `dsh-tools` uses. This means a
+  superpowers skill registered at a preset scope shadows a same-name
+  global one — the port must not register the same `name` twice.
+- `registerProvider` is **synchronous** and must be called during
+  `apply()`. Remote initialization belongs in the provider's `list()`.
+- `invalidate()` is **registration-scoped**: a stale callback cannot
+  affect a replacement provider with the same name.
+- `renderSkillContent` is the **single source of truth** for the
+  model-facing wrapper. Both the `skill` tool and the user-explicit
+  injection go through it — that's the rule the next agent should
+  preserve when adding any new skill-loading path.
+- `whenToUse` and `metadata` are **provider metadata**, not rendered
+  to the model. Superpowers skills can populate them as routing hints
+  but should not expect them to surface in the prompt.
+- Discovery is **one level deep** (no nested `**/SKILL.md`). The
+  existing `superpowers/skills/<name>/SKILL.md` layout already matches.
+- The **catalog** is whole-list replaced on any change (digest diff
+  on `name` + `description`). KV-cache friendly because it sits at
+  the system-prompt head; only the catalog digest determines whether
+  a re-publish is needed.
+
+### 9.2 — Pass 2: Hook subsystem (depth graph)
+
+```mermaid
+flowchart TB
+  subgraph PROTO["@deepseek-ai/dsh-hook-protocol (library, NOT a plugin)"]
+    MATCH["matcherDiagnostic / matchesMatcher"]
+    RUN["runHook(bash, hook, opts, now)"]
+    CODEC["parseHookOutput(exit, stdout, stderr)"]
+    MERGE["mergeHookOutputs (deny > ask > allow)"]
+    EVT_APP["appendHookInvoked / appendHookResult"]
+    DETACH["createDetachedRuns()"]
+    DEF_TIMEOUT["DEFAULT_HOOK_TIMEOUT_MS = 600_000"]
+    DEF_STDERR["DEFAULT_STDERR_SUMMARY_MAX_CHARS = 500"]
+    MATCH --> RUN
+    RUN --> CODEC
+    CODEC --> MERGE
+    RUN --> EVT_APP
+    CODEC --> EVT_APP
+    DETACH --> RUN
+  end
+
+  subgraph CC["@deepseek-ai/dsh-hooks-claude-code (Plugin)"]
+    CC_APPLY["apply(ctx, Config)"]
+    CC_PARSE["parseClaudeCodeConfig(path)"]
+    CC_LISTENERS["per-point listeners:<br/>SessionStart | UserPromptSubmit | PreToolUse | PostToolUse | Stop | SessionEnd"]
+    CC_LISTENERS -. runHook .-> RUN
+    CC_LISTENERS -. mergeHookOutputs .-> MERGE
+    CC_LISTENERS -. ctx.shell .-> SHELL
+    CC_PARSE --> CC_APPLY
+    CC_APPLY --> CC_LISTENERS
+  end
+
+  subgraph CX["@deepseek-ai/dsh-hooks-codex (Plugin)"]
+    CX_APPLY["apply(ctx, Config)"]
+    CX_PARSE["parseCodexConfig(path)"]
+    CX_LISTENERS["subset: SessionStart | UserPromptSubmit | PreToolUse | PostToolUse | Stop"]
+    CX_LISTENERS -. runHook .-> RUN
+    CX_LISTENERS -. mergeHookOutputs .-> MERGE
+    CX_LISTENERS -. ctx.shell .-> SHELL
+    CX_PARSE --> CX_APPLY
+    CX_APPLY --> CX_LISTENERS
+  end
+
+  SHELL["@deepseek-ai/dsh-shell<br/>(ctx.shell)"]
+  SHELL --> RUN
+
+  CFG[(".claude/hooks.json OR settings.json hooks key")]
+  CFG --> CC_PARSE
+  CFG2[("~/.codex/hooks.json or similar")]
+  CFG2 --> CX_PARSE
+
+  EVT_P[/"agent/session-start (emit) → additionalContext"/]
+  EVT_PR[/"agent/pre-step (waterfall) → reject or inject"/]
+  EVT_PRE[/"tools/pre-execute (waterfall) → permission"/]
+  EVT_POST[/"tools/post-execute (waterfall) → additionalContext"/]
+  EVT_STOP[/"agent/turn-stopping (serial) → continue:false"/]
+  EVT_SE[/"SessionEnd (no direct mapping — TODO(per-session-hook-config))"/]
+  CC_LISTENERS --> EVT_P
+  CC_LISTENERS --> EVT_PR
+  CC_LISTENERS --> EVT_PRE
+  CC_LISTENERS --> EVT_POST
+  CC_LISTENERS --> EVT_STOP
+  CX_LISTENERS --> EVT_P
+  CX_LISTENERS --> EVT_PR
+  CX_LISTENERS --> EVT_PRE
+  CX_LISTENERS --> EVT_POST
+  CX_LISTENERS --> EVT_STOP
+
+  EVT_HOOK_INV(["session/event hook/invoked (log-only)"])
+  EVT_HOOK_RES(["session/event hook/result (log-only)"])
+  EVT_APP --> EVT_HOOK_INV
+  EVT_APP --> EVT_HOOK_RES
+
+  CC -. inject shell .-> SHELL
+  CX -. inject shell .-> SHELL
+  CC -. inject agents+tools+session (opportunistic) .-> AGENTS
+
+  AGENTS["@deepseek-ai/dsh-agent<br/>(ctx.agents)"]
+  TOOLS["@deepseek-ai/dsh-tools<br/>(ctx.tools)"]
+
+  classDef svc fill:#dbeafe,stroke:#2563eb
+  classDef evt fill:#fef3c7,stroke:#b45309
+  classDef file fill:#e0e7ff,stroke:#4338ca
+  classDef type fill:#fce7f3,stroke:#be185d
+  class CC_APPLY,CC_LISTENERS,CX_APPLY,CX_LISTENERS,SHELL,AGENTS,TOOLS,RUN,MERGE,CODEC,MATCH,EVT_APP,DETACH svc
+  class EVT_P,EVT_PR,EVT_PRE,EVT_POST,EVT_STOP,EVT_SE,EVT_HOOK_INV,EVT_HOOK_RES evt
+  class CFG,CFG2 file
+  class DEF_TIMEOUT,DEF_STDERR type
+```
+
+**Key signals from Pass 2:**
+
+- `dsh-hook-protocol` is a **library, not a plugin**. It has no
+  `apply`, no `inject`, no `name` — just exports. Both `dsh-hooks-claude-code`
+  and `dsh-hooks-codex` import from it.
+- The **CC bridge is a strict superset of the Codex bridge**. Codex
+  supports fewer points, regex-only matchers (CC is literal-or-regex),
+  no env substitution, and only blocking decisions (no
+  approval/rewrite). If a superpowers `hooks.json` works on both
+  dialects, the CC bridge is the more permissive choice.
+- The bridges both inject `shell` (required to run hook commands)
+  and the rest **opportunistically** via `ctx.get`. A deployment
+  can load a bridge without every extension-point being present.
+- **Permission precedence is `deny > ask > allow`** — the same as
+  Claude Code's hook merging semantics.
+- `SessionStart` runs **before turn 1** and gets **no** `hook/*` event
+  pair. Its allowed context stays pending in the inbox until a
+  waking delivery opens a turn.
+- **`SessionEnd` is not mapped yet** — `TODO(per-session-hook-config)`.
+  This is the one CC hook surface that does not transfer.
+- `configPath` is **process-level**, not per-session. The next
+  agent should not assume a per-project `hooks.json` discovery.
+- `defaultTimeoutMs` defaults to 600 000 ms (10 minutes — the CC
+  default).
+
+### 9.3 — Pass 3: Agent-presets (depth graph)
+
+```mermaid
+flowchart TB
+  subgraph PRESET["@deepseek-ai/dsh-agent-presets"]
+    SERVICE["AgentPresets service<br/>ctx.agentPresets"]
+    DISCOVERY["discovery.ts: listRoots / listPresets / read"]
+    MOUNT["mount.ts: ensureStanding + scope.parent(...)"]
+    AUTHOR["authoring.ts: copy / remove"]
+    INVARIANT["invariant.ts: scope + published-service audit"]
+    HEALTH["compositionProblem(path)<br/>shape check via entryListSchema"]
+    SERVICE --> DISCOVERY
+    SERVICE --> MOUNT
+    SERVICE --> AUTHOR
+    MOUNT --> INVARIANT
+    INVARIANT --> HEALTH
+  end
+
+  CFG[/"Config: default, roots[], includeUserRoot"/]
+  META[/"preset.yml: name, description, order"/]
+  COMP[/"agent.cordis.yml: top-level list of plugin rows"/]
+  SVC[/"AgentPreset: id, trust, path, name?, description?, order?, broken?"/]
+  ID_REGEX[/"PRESET_ID = /^[a-z0-9][a-z0-9-]*$/"/]
+  TRUST[/"PresetTrust: system | user"/]
+  ERR_UNKNOWN[/"UnknownPresetError(presetId, available)"/]
+  ERR_MOUNT[/"PresetMountError(presetId, reason)"/]
+
+  ROOT_CFG[("Config.roots[] in precedence order")]
+  ROOT_USER[("$DSH_HOME/.agent-presets (user trust)")]
+  ROOT_SHIP[("(app-installed shipped root, system trust)")]
+  ROOT_CFG --> DISCOVERY
+  ROOT_USER --> DISCOVERY
+  ROOT_SHIP --> DISCOVERY
+
+  DIR["my-preset/"]
+  DIR --- COMP
+  DIR --- META
+  DIR --> DISCOVERY
+
+  SCOPE["dsh-scope ScopeKey<br/>(parent chain)"]
+  AGENT_CTX["agent.ctx (createAgent)"]
+  TOOL_REG["ctx.tools registration (per-preset layer)"]
+  PROMPT_REG["ctx.systemPrompt section (per-preset layer)"]
+  AGENT_CTX --> MOUNT
+  MOUNT --> SCOPE
+  SCOPE --> TOOL_REG
+  SCOPE --> PROMPT_REG
+
+  CFG --> SERVICE
+  META --> SERVICE
+  COMP --> HEALTH
+  SVC --> SERVICE
+  ID_REGEX --> DISCOVERY
+  TRUST --> DISCOVERY
+  ERR_UNKNOWN --> SERVICE
+  ERR_MOUNT --> MOUNT
+  AUTHOR --> DIR
+
+  HEADER["session.header (creation-fact)"]
+  EVENT_PS(["session/event agent-preset/selected (re-emit for cold reads)"])
+  AGENT_CTX --> HEADER
+  HEADER --> EVENT_PS
+
+  COPY_OP["copy(from, id, name?)"]
+  REMOVE_OP["remove(id)"]
+  AUTHOR --> COPY_OP
+  AUTHOR --> REMOVE_OP
+  COPY_OP --> DIR
+  REMOVE_OP --> DIR
+
+  classDef svc fill:#dbeafe,stroke:#2563eb
+  classDef evt fill:#fef3c7,stroke:#b45309
+  classDef file fill:#e0e7ff,stroke:#4338ca
+  classDef type fill:#fce7f3,stroke:#be185d
+  class SERVICE,DISCOVERY,MOUNT,AUTHOR,INVARIANT,HEALTH,SCOPE,AGENT_CTX,TOOL_REG,PROMPT_REG,COPY_OP,REMOVE_OP svc
+  class EVENT_PS evt
+  class ROOT_CFG,ROOT_USER,ROOT_SHIP,DIR,COMP,META,CFG,HEADER file
+  class SVC,ID_REGEX,TRUST,ERR_UNKNOWN,ERR_MOUNT,META type
+```
+
+**Key signals from Pass 3:**
+
+- The preset is mounted **once per process** under a **standing scope**.
+  Each session that names the preset joins by having its agent scope
+  key parented to the mount — N sessions share **one** mounted subtree.
+- `mount()` must be called from the agent factory's
+  `setup(agentCtx)` hook. Calling it elsewhere leaves a half-composed
+  session.
+- The standing subtree is owned by the roster's **own untraced
+  context** — deliberately not the caller's `this.ctx` — so a traced
+  caller doesn't shadow it.
+- The session **header** records the preset the session *started* with;
+  `resolveSessionPreset(session)` returns the preset it *runs* with.
+  They differ after a `recompose()`. **Use `resolveSessionPreset`,
+  not the header**, when reconstructing.
+- `recompose()` is **blank-agent only**. Switching a composition that
+  already ran would strand tools the model has called. The gateway
+  enforces this at the wire.
+- `copy()` is the **only authoring write**. No caller ever supplies
+  composition text. The source can be any trust, but the copy lands
+  under the first `user` root.
+- `remove()` refuses a preset that ships with the deployment.
+- A **broken preset stays on the roster** (with a `broken: string`
+  reason) instead of being skipped — otherwise the directory would
+  block its id while no surface showed anything to delete.
+- The `cordis.yml` resolution from a preset's `agent.cordis.yml` is
+  the **host base** (not the preset's own directory), so bare
+  `@deepseek-ai/dsh-*` rows work; **relative** paths resolve from
+  the preset's own directory; **absolute** paths keep their
+  location (converted to `file:` URL).
+- A **superseded generation is never reclaimed**. Sessions keep the
+  generation they joined. Reclamation needs a joined-agent count
+  on the standing mount (currently a `TODO`).
+- The `!!js` tagged scalar in the preset's `agent.cordis.yml`
+  evaluates against the **plugin's runtime** (after injections
+  activate), not at parse time. Other entry metadata stays literal.
+
+### 9.4 — Merged depth graph (cross-seam)
+
+The three sub-systems are **not independent**. They share:
+
+- the **session log** (`ctx.sessions` / `session/event`) as the
+  durable record of every model-visible fact;
+- the **scope chain** (`dsh-scope` `parent(...)`) as the mechanism
+  that lets a preset's plugins reach the agent;
+- the **agent loop** (`dsh-agent-loop` + `dsh-agent-default-model`)
+  as the single driver that runs `agent/pre-step` → `agent/request`
+  → `tools/*` → `step/end`;
+- the **tool registry** (`dsh-tools`) as the single namespace for
+  every model-facing tool (`skill`, `bash`, `edit`, `subagent`, etc.).
+
+```mermaid
+flowchart TB
+  subgraph CORE["Core spine (host plane)"]
+    AGENT["@deepseek-ai/dsh-agent<br/>ctx.agents"]
+    LOOP["@deepseek-ai/dsh-agent-loop<br/>ctx.agentLoop"]
+    TOOLS["@deepseek-ai/dsh-tools<br/>ctx.tools"]
+    SP["@deepseek-ai/dsh-system-prompt<br/>ctx.systemPrompt"]
+    LLM["@deepseek-ai/dsh-llm<br/>ctx.llm"]
+    SESS["@deepseek-ai/dsh-session<br/>ctx.sessions"]
+    SCOPE["@deepseek-ai/dsh-scope<br/>(no ctx key)"]
+    SET["@deepseek-ai/dsh-settings<br/>ctx.settings"]
+    CRED["@deepseek-ai/dsh-credentials<br/>ctx.credentials"]
+  end
+
+  subgraph LLM_BACK["@deepseek-ai/dsh-llm-deepseek"]
+    DS_ADAPTER["DeepSeekAdapter (deepseek-official)"]
+  end
+
+  subgraph SKILL_S["Skill seam (mixed plane)"]
+    REG["SkillRegistry<br/>ctx.skills (host)"]
+    FSP["FileSystemSkillProvider (provider)"]
+    TSP["tool-skill (consumer)"]
+  end
+
+  subgraph HOOK_S["Hook subsystem (host plane, opt-in)"]
+    HPROTO["dsh-hook-protocol (library)"]
+    HCB["dsh-hooks-claude-code"]
+    HXB["dsh-hooks-codex"]
+  end
+
+  subgraph PRESET_S["Agent-presets (mixed plane)"]
+    APSVC["AgentPresets<br/>ctx.agentPresets (host)"]
+    APMOUNT["standing scope (per preset, per session)"]
+  end
+
+  LOOP --> AGENT
+  LOOP --> LLM
+  LOOP --> TOOLS
+  LOOP --> SESS
+  LOOP --> SP
+  AGENT -. agent/pre-step .-> LOOP
+  TOOLS -. tools/* .-> LOOP
+  LLM --> DS_ADAPTER
+  SET -. llm-deepseek section .-> LLM
+  CRED -. DEEPSEEK_API_KEY .-> LLM
+
+  SP -. assembles .-> REG
+  TOOLS -. registers .-> TSP
+  TOOLS -. registers .-> FSP
+  TSP -. ctx.skills.snapshot() .-> REG
+  FSP -. registerProvider .-> REG
+  TSP -. agent/pre-step listener .-> LOOP
+  TSP -. agent.inject() user/message .-> SESS
+
+  HPROTO --> HCB
+  HPROTO --> HXB
+  HCB -. agent/pre-step .-> LOOP
+  HCB -. tools/pre-execute .-> TOOLS
+  HCB -. tools/post-execute .-> TOOLS
+  HCB -. agent/turn-stopping .-> AGENT
+  HXB -. agent/pre-step .-> LOOP
+  HXB -. tools/pre-execute .-> TOOLS
+  HCB -. session/event hook/* .-> SESS
+  HXB -. session/event hook/* .-> SESS
+
+  APSVC -. mount(agentCtx, id) .-> APMOUNT
+  APMOUNT -. scope.parent(agent) .-> SCOPE
+  APMOUNT -. registers tool:skill .-> TOOLS
+  APMOUNT -. registers prompt section .-> SP
+  APMOUNT -. mounts skill-filesystem (preset-scoped) .-> FSP
+  APMOUNT -. mounts tool-skill (preset-scoped) .-> TSP
+
+  classDef host fill:#dbeafe,stroke:#2563eb
+  classDef agent fill:#dcfce7,stroke:#16a34a
+  classDef evt fill:#fef3c7,stroke:#b45309
+  class AGENT,LOOP,TOOLS,SP,LLM,SESS,SCOPE,SET,CRED,REG,APMOUNT,HPROTO host
+  class DS_ADAPTER,FSP,TSP,HCB,HXB,APSVC agent
+```
+
+**Cross-seam signals — what to watch for during the port:**
+
+1. **Plane separation is real.** The skill registry stays in the
+   **host plane**; only the per-agent consumers (`tool-skill`,
+   `skill-filesystem`) move into a preset. The hook subsystem is
+   **host-plane, opt-in**. Agent-presets are **mixed plane** —
+   `agentPresets` is host, but the standing mount is per-preset.
+   A superpowers port that ships its own preset must respect
+   this — the skill tooling belongs in the preset's own row list,
+   not at the host level.
+2. **All three sub-systems write to the session log.** Skills via
+   `skill-catalog` and `skill-invocation` `MessageSource`s; hooks
+   via `hook/invoked` and `hook/result`; presets via
+   `agent-preset/selected`. A replay/cold-read must reconstruct
+   all three from the log alone. The "model-visible ⟺ logged" rule
+   applies uniformly.
+3. **`inject` declarations declare the load order, not the
+   call order.** `dsh-tool-skill` injects `['agents', 'tools',
+   'skills']`; the harness waits for all three before mounting it.
+   Any port that adds a new consumer must declare its
+   dependencies in the same way.
+4. **Waterfall listeners must `next()`.** The `agent/pre-step` and
+   `tools/*` listeners in both the skill and the hook subsystems
+   are waterfalls. A short-circuit must be intentional. A buggy
+   port that returns without `next()` will silently freeze the
+   agent.
+5. **KV-cache stability is the design centre, not a side effect.**
+   The skill catalog appends whole-list; the tool schema is
+   prefix-stable while the visibility doesn't change; the catalog
+   digest is what decides re-publish. A port that injects skills
+   at random points in the prompt will invalidate the cache
+   on every turn.
+6. **The catalog and the user-explicit injection are the same
+   `renderSkillContent`.** The model sees one shape regardless of
+   who initiated the load. A port that adds a new injection path
+   (e.g. a `/superpowers-…` argument parser) must call
+   `renderSkillContent` and use the `skill-invocation`
+   `MessageSource` — otherwise the catalog's "do not re-load"
+   closing sentence lies.
+7. **The hook bridges share the protocol, not the dialect.** Two
+   bridges, one library. A superpowers `hooks.json` that already
+   runs on Claude Code runs on DeepSeek via the CC bridge with
+   no port work, *if* the user's `hooks.json` is in the
+   supported subset (only `type: 'command'`, no `http`/`mcp_tool`
+   /`prompt`/`agent`, and the user does not depend on
+   `SessionEnd`).
+
+### 9.5 — Quick reference: the three sub-systems at a glance
+
+| Sub-system | Service / entry | Provider / impl | Consumer / tool | Plane | Key event | Key state |
+|---|---|---|---|---|---|---|
+| Skill | `ctx.skills` (`SkillRegistry`) | `dsh-skill-filesystem` (local); `BUNDLED_SKILL_RANK = 600` | `dsh-tool-skill` (catalog + `skill` tool) | Mixed (registry host, consumers per-preset) | `skills/change` (emit) | per-scope `SkillLayer` |
+| Hook | `dsh-hook-protocol` (library) | `dsh-hooks-claude-code`; `dsh-hooks-codex` | Same plugins (listeners on core events) | Host (opt-in) | `session/event hook/invoked`, `hook/result` | per-handler `handlerId` correlation |
+| Preset | `ctx.agentPresets` (`AgentPresets`) | Discovery reads roots + `USER_PRESET_DIR` + shipped root | `mount()` is the join point; `recompose()` for blank-agent swap | Mixed (service host, mount per-preset) | `agent-preset/selected` (re-emit for cold reads) | per-preset standing mount + `dsh-scope` parent chain |
+
+---
 
 ## Appendix A — File pointers (where to look)
 
