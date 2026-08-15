@@ -260,23 +260,52 @@ def compare_files(base: str, head: str) -> list[dict]:
         text=True,
         check=True,
     )
-    return json.loads(r.stdout) if r.stdout.strip() else []
+    out = r.stdout.strip()
+    if not out:
+        return []
+    try:
+        return json.loads(out)
+    except json.JSONDecodeError as e:
+        print(
+            f"WARN: compare_files JSON parse failed: {e}; "
+            f"treating as zero files",
+            file=sys.stderr,
+        )
+        return []
 
 
 def compare_messages(base: str, head: str) -> list[str]:
+    # Wrap in a JSON array so json.loads is well-defined regardless of
+    # how many messages come back. Without the wrapper, `--jq
+    # .[].commit.message` produces raw newline-separated strings, which
+    # json.loads rejects.
     r = subprocess.run(
         [
             "gh",
             "api",
             f"repos/{UPSTREAM_REPO}/compare/{base}...{head}",
             "--jq",
-            ".commits // [] | .[].commit.message",
+            "[.commits // [] | .[].commit.message]",
         ],
         capture_output=True,
         text=True,
         check=True,
     )
-    return json.loads(r.stdout) if r.stdout.strip() else []
+    out = r.stdout.strip()
+    if not out:
+        return []
+    try:
+        return json.loads(out)
+    except json.JSONDecodeError as e:
+        # Defensive: if the API ever returns a non-JSON body for a
+        # valid call (rate-limit message, partial page, etc.), don't
+        # crash the watcher — treat as zero messages.
+        print(
+            f"WARN: compare_messages JSON parse failed: {e}; "
+            f"treating as zero messages",
+            file=sys.stderr,
+        )
+        return []
 
 
 # ----- rename detection -----
