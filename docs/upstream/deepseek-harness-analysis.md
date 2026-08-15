@@ -1410,6 +1410,115 @@ npx @deepseek-ai/dsh@0.1.0-rc.5 --profile web --patch ./deepseek-cordis.yml --du
 
 ---
 
+## Appendix C — Verification of §8 open questions (port-time audit, 2026-08-15)
+
+> Added by the coder agent that shipped `fork/deepseek-harness-bridge/`.
+> Each of the three "top-3" questions from §8 is closed here with the
+> actual evidence found; the other 9 (subagent semantics, ACP, the
+> `dsh` API stability, etc.) are tagged "deferred" with a pointer to
+> the bridge doc that handles them.
+
+### C.1 — `catalogDescriptionMaxLength` (500-char cap) — **RESOLVED, NO TRIMMING NEEDED**
+
+The harness's `catalogDescription()` in
+`packages/skill/tool-skill/src/index.ts` normalizes the description
+with `value.replaceAll(/\s+/g, ' ').trim()` and truncates with
+`...` when the result exceeds `catalogDescriptionMaxLength`
+(default `DEFAULT_CATALOG_DESCRIPTION_MAX_LENGTH = 500`).
+
+A grep of every `superpowers/skills/*/SKILL.md` (15 files at the
+time of writing, 2026-08-15) returns the following description
+lengths, sorted descending:
+
+| length | skill |
+| ---: | --- |
+| 315 | `safety-check` |
+| 234 | `receiving-code-review` |
+| 225 | `verification-before-completion` |
+| 200 | `brainstorming` |
+| 196 | `using-git-worktrees` |
+| 154 | `using-superpowers` |
+| 107 | `requesting-code-review` |
+| 106 | `dispatching-parallel-agents` |
+| 104 | `executing-plans` |
+| 101 | `finishing-a-development-branch` |
+| 97 | `writing-skills` |
+| 91 | `systematic-debugging` |
+| 85 | `subagent-driven-development` |
+| 84 | `writing-plans` |
+| 79 | `test-driven-development` |
+
+**The maximum is 315 chars — well under the 500 cap.** No
+description needs trimming. The `tests/evals/scenarios/deepseek-harness/setup.sh`
+precheck now verifies this on every run and emits a `WARN` (not
+`FAIL`) if the cap is ever breached in the future, so the
+deploy-time decision is automated.
+
+### C.2 — `/<name>` invocation regex — **RESOLVED, ALL 15 NAMES MATCH**
+
+The harness's user-explicit-invocation regex (in
+`packages/skill/tool-skill/src/index.ts`, file SHA
+`e2a0cc2dca2817d2d2984b074c1f69e81b2b444e` at the time of
+writing) is:
+
+```ts
+const SKILL_GESTURE = /(^|\s)\/([a-z0-9]+(?:-[a-z0-9]+)*)(?=\s|$)/g
+```
+
+with the matching name captured in `match[2]`. The upstream
+`isSkillName()` validator in `packages/skill/skill/src/index.ts`
+uses the same `^[a-z0-9]+(?:-[a-z0-9]+)*$` grammar.
+
+All 15 superpowers skill names are kebab-case
+(`using-superpowers`, `test-driven-development`, etc.) and match
+both the regex and the validator. **No skill needs a rename.**
+
+The same regex correctly *rejects* the failure modes the harness
+README calls out:
+
+| Token | Rejected because |
+| --- | --- |
+| `/usr/bin/ls` | `usr` is bounded on the left by `/`, not whitespace |
+| `5/8` | `5` is not a name match (no leading whitespace) and `8` is not a name either |
+| `/UsingSuperpowers` | `UsingSuperpowers` contains uppercase — the grammar is lowercase-only |
+| `/brainstorming_v2` | `_` is not in the grammar's character set |
+| `/brainstorming my idea` | only `brainstorming` matches; `my idea` stays as prose (the regex stops at the whitespace) |
+
+The `tests/evals/scenarios/deepseek-harness/checks.sh` postcheck
+exercises all five of these rejection cases against a Quorum
+transcript. No native Cordis plugin is needed.
+
+### C.3 — `SessionEnd` hook mapping — **RESOLVED, NO SKILL DEPENDS ON IT**
+
+A grep of `hooks/`, `skills/`, and the bridge directory returns
+zero matches for `SessionEnd` (case-sensitive) and zero matches
+for `session-end` (kebab-case, the hook event name convention).
+The DeepSeek harness's `dsh-hooks-claude-code` package documents
+`SessionEnd` as one of the 23 unsupported events; the bridge's
+`hooks.json` does not register it, and the existing
+`hooks/session-start` script does not reference it either.
+
+**No superpowers skill or hook depends on `SessionEnd`.** If a
+future skill does, the bridge README
+(`fork/deepseek-harness-bridge/README.md`) documents the
+migration path: a native Cordis plugin on the harness's
+`agent/turn-end` / `session/dispose` extension points, in
+`fork/deepseek-harness-bridge/src/`. The bridge does not paper
+over the gap with a workaround.
+
+### C.4 — Other §8 questions, deferred to the bridge README
+
+The remaining nine §8 questions (subagent `run_in_background`
+semantics, token-meter effect on KV cache, `dsh` API stability,
+etc.) are addressed in
+`fork/deepseek-harness-bridge/README.md` under the
+"What's and is not covered" and "Open questions deferred to
+upstream" sections. The main session's ask-PR work can lift
+the bridge's stance on each one verbatim when filing the
+upstream PR.
+
+---
+
 *End of analysis. Next agent: please verify the items in §8 before
 committing to a port shape, and treat §6's permission-rule and
 subagent-shape differences as the load-bearing port-work items.*
