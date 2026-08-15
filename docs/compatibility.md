@@ -17,6 +17,7 @@
 |---|---|---|---|---|---|
 | **Claude Code** | ✅ | ✅ | ✅ | ✅ | Primary runtime. Full test path. The `MANDATORY-SAFETY-GATE` is loaded by SessionStart hook. `safety-check` skill auto-loads. Hook blocks at the tool layer. |
 | **Gemini CLI** | ✅ | ✅ | ✅ | ✅ | `gemini skills link` over 15 skills including safety-check. Gate's resource check (`vm_stat`) is macOS-specific — would need adjustment on Linux. |
+| **DeepSeek Harness** | 🟡 | 🟡 | 🟡 | ✅ | New runtime, 2026-08-15 release. Not installed on test host. Bridge in `fork/deepseek-harness-bridge/` (Cordis plugin + `cordis.yml` overlay + Claude-Code-shaped `hooks.json`). Lowest-friction install: `dsh --profile web --patch ./fork/deepseek-harness-bridge/cordis.yml`. Prereq analysis at `docs/upstream/deepseek-harness-analysis.md`. Upstream-PR inquiry to `obra/superpowers` pending — not claiming compatibility here until the ask-PR model resolves. |
 | **Codex CLI** | ❌ | 🟡 | 🟡 | ✅ | Codex CLI not installed on test host. Manifest validated; install path requires OpenAI's plugin publish flow. |
 | **Cursor** | ❌ | 🟡 | 🟡 | ✅ | Cursor not installed on test host. Plugin auto-discovered via `.cursor-plugin/plugin.json`. |
 | **Devin CLI** | ❌ | 🟡 | 🟡 | ✅ | Devin not installed on test host. `.devin-plugin/plugin.json` is auto-discovered; Devin's own system prompt already documents subagent / todo / question tools, so no tool-mapping scaffold is required. CI test in `tests/devin/test-devin-plugin.sh`. |
