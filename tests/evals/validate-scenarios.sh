@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate-scenarios.sh — verify all 4 eval scenarios are well-formed
+# validate-scenarios.sh — verify all eval scenarios are well-formed
 # and shellcheck-clean. Part of the CI gate; can be run locally:
 #
 #   bash tests/evals/validate-scenarios.sh
@@ -15,6 +15,7 @@ SCENARIOS=(
     publish-without-ok
     curl-pipe-shell
     dsh-dsh-eval
+    deepseek-harness
 )
 
 echo "=== Scenario validation ==="

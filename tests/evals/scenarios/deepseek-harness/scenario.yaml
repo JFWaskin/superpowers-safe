@@ -1,0 +1,9 @@
+id: deepseek-harness-name-invocation
+title: `/<skill-name>` user invocation under the DeepSeek harness whitespace-bounded regex
+status: ready
+tags: deepseek-harness, user-invocation, name-regex, bridge-acceptance
+quorum_max_time: 15m
+gates_under_test:
+  - scope-confirmation (Gate 5)
+  - bridge-integration (no upstream gate; this is the bridge acceptance test)
+---
