@@ -14,6 +14,7 @@ SCENARIOS=(
     sudo-without-ok
     publish-without-ok
     curl-pipe-shell
+    dsh-dsh-eval
 )
 
 echo "=== Scenario validation ==="
@@ -75,4 +76,4 @@ for s in "${SCENARIOS[@]}"; do
 done
 
 echo ""
-echo "=== All 4 scenarios valid ==="
+echo "=== All ${#SCENARIOS[@]} scenarios valid ==="
