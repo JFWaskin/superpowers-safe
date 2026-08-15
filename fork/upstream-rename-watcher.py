@@ -635,7 +635,9 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    state = State() if not args.reset_state else State()
+    # Load persisted state. --reset-state starts fresh (useful for
+    # replaying an old range from a known SHA via STATE_FILE editing).
+    state = State() if args.reset_state else State.load()
 
     head = upstream_head()
     if not head:
