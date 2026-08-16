@@ -1,33 +1,163 @@
-# PR: Shubhamsaboo/awesome-llm-apps
+---
+target_repo: Shubhamsaboo/awesome-llm-apps
+pr_url: https://github.com/Shubhamsaboo/awesome-llm-apps/pull/1081
+status: closed
+closed_on: 2026-08-16
+closed_reason: link-only README additions are declined
+---
+
+# PR: Shubhamsaboo/awesome-llm-apps — CLOSED
 
 > **Target repo:** https://github.com/Shubhamsaboo/awesome-llm-apps
 > **Stars:** ~132k, very high traffic
 > **Acceptance criteria:** Repo description says "100+ open-source AI
 > agents, agent skills, and RAG apps. Hand-built, tested end-to-end,
 > Apache-2.0." Their scope explicitly includes "agent skills" — we
-> fit.
-> **Status:** FIRE NOW (high-leverage, but only 9 open PRs at last
-> check — selective, so a focused pitch matters)
+> fit on topic, but the maintainer enforces a "no link-only README
+> additions" rule (see closure analysis below).
+> **Status:** **CLOSED 2026-08-16** by maintainer @Shubhamsaboo. Link-only
+> README additions are declined. Acknowledgement comment drafted at
+> `02-acknowledgement-draft.md` (NOT posted — user reviews and posts).
 
-## Why this list
+## Closure analysis
 
-132k stars, "100+ open-source AI agents, agent skills, and RAG apps"
-— the term "agent skills" is in their pitch. Our safety-check is
-a skill. We're MIT (their stated license is Apache-2.0, but MIT is
-similar and they list other licenses). High leverage IF accepted.
+- **Closed:** 2026-08-16, ~6 hours after PR opened.
+- **Reason (maintainer's words):** "This PR only adds a README
+  bullet linking to an external fork, with no runnable code added
+  in its own folder here. Link-only README additions are declined
+  as a rule."
+- **What was learned:** awesome-list repos with a curated-examples
+  policy (i.e. a list that curates and hosts the examples itself)
+  will not accept link-only PRs, even when the topic is squarely
+  in-scope. This is a meaningful constraint on the
+  "fire-and-forget awesome-list placement" strategy: for any
+  curated-host list, the contribution unit is a self-contained
+  folder in the awesome-list repo, not a pointer to an external
+  repo.
 
-## How to submit
+### Cross-link: other awesome-list targets and their rules
 
-1. Go to https://github.com/Shubhamsaboo/awesome-llm-apps
-2. Open a PR adding a row to the agent-skills / safety / subagents
-   section (or wherever fits their current structure)
-3. Their contributing rules (if any) are in the README footer
+- `01-e2b-dev-awesome-ai-agents.md` (e2b-dev/awesome-ai-agents,
+  29k stars) — categorizes entries under headings like "Coding
+  Agents" and "Agent Tooling"; the README has no explicit
+  link-only rule visible, so a link-only PR may be acceptable
+  there. Untested; treat as an open question until/unless
+  e2b-dev declines the same way.
+- `04-voltagent-awesome-claude-code-subagents.md`
+  (VoltAgent/awesome-claude-code-subagents, 24k stars) — collects
+  **subagent `.md` definition files** in folders; the unit of
+  contribution is a self-contained file in the awesome-list repo
+  (their `agents/<name>.md` template), not a link. That is a
+  stricter version of the same curated-host policy
+  Shubhamsaboo enforces. Staged, do-not-fire per its draft.
+- `03-hesreallyhim-awesome-claude-code.md`
+  (hesreallyhim/awesome-claude-code, 52k stars) — gated by the
+  14-day-or-100-stars rule, not by a curated-host rule. Different
+  shape of barrier.
 
-## PR title
+The "curated host" pattern (Shubhamsaboo, VoltAgent) is a
+meaningful signal: awesome-lists that host the artifacts they
+showcase will not accept link-only PRs, regardless of topical
+fit. Awesome-lists that are pure-link indexes (e.g. the classic
+`awesome-*` lists with bulleted links to external repos) remain
+link-friendly.
+
+## Self-contained example path (assessment)
+
+Shubhamsaboo offered: "If you would like to add a self-contained,
+runnable example in its own folder in this repo, please open a new
+PR." Below is a feasibility note. The user has the final call —
+this is a judgment, not a refusal.
+
+### What it would look like (concretely)
+
+A new folder in
+`Shubhamsaboo/awesome-llm-apps`:
+
+```
+awesome_llm_apps/agent_skills/superpowers_safe/
+├── README.md
+├── safety_preflight_demo.py     # ~50–100 lines
+└── requirements.txt
+```
+
+- `safety_preflight_demo.py` — a minimal runnable script that
+  imports the safety-check 5-gate preflight from
+  `superpowers_safe/skills/safety_check/` and runs the gates
+  against a sample destructive command (e.g. an out-of-cwd
+  `rm -rf` and a sudo invocation). Demonstrates the gate output
+  (which gate fired, what it blocked, what the user prompt would
+  be) without requiring the full `obra/superpowers` skill runtime
+  to be installed. Possibly stand on its own by inlining the
+  gate logic into the script, with attribution.
+- `README.md` — explains the pattern (5-gate preflight,
+  defense-in-depth with `nono.sh`, cross-runtime packaging),
+  with a "How to run" section and a pointer back to
+  `JFWaskin/superpowers-safe` for the full plugin.
+- `requirements.txt` — empty or near-empty (the safety-check
+  gates are stdlib + subprocess, no third-party deps).
+
+### Cost
+
+- ~½ day of real work: 1–2 hours to write the demo script and
+  README, 1–2 hours to iterate on review feedback from
+  @Shubhamsaboo.
+- Ongoing maintenance burden: Shubhamsaboo's repo is fast-moving
+  (high traffic, frequent PRs). A PR in their tree can rot in
+  weeks if their structure changes, their example categories
+  reorganize, or their safety-themed section moves.
+- Review attention spent that does not directly improve
+  `superpowers-safe` itself.
+
+### Benefit
+
+- A curated placement in one of the most-trafficked LLM-app
+  awesome lists (132k stars), with "actually runs" credibility
+  rather than just a link.
+- A demonstration artifact that could be reused in
+  `JFWaskin/superpowers-safe/docs/examples/` and on the x-thread /
+  show-hn drafts as a concrete runnable demo.
+
+### Recommendation
+
+**Lean against** pursuing this path. The "self-contained example
+in someone else's awesome list" is a strange artifact:
+`awesome-llm-apps` is a showcase of LLM apps, and a safety-check
+preflight is not really an LLM app. It is a safety layer for an
+LLM-app development workflow. A demo of the safety layer is more
+naturally at home in `JFWaskin/superpowers-safe`'s own `docs/` or
+`examples/` folder, where the maintenance cost is zero and the
+audience (existing and prospective users of the fork) is the
+right one.
+
+Reallocating the ~½ day to other awesome-list targets is
+strictly better use of attention:
+
+- `e2b-dev/awesome-ai-agents` (unblock the FIRE NOW PR if it is
+  still open) — pure-link index, no curated-host rule.
+- `VoltAgent/awesome-claude-code-subagents` follow-up — only
+  if a real subagent refactor of safety-check is done (separate
+  work; see that draft's "If you want to fit anyway" section).
+- `hesreallyhim/awesome-claude-code` — eligible from
+  **2026-08-22** or 100 stars, whichever first.
+
+This is a judgment call, not a refusal. If the user wants the
+132k-star placement and is willing to absorb the maintenance
+burden, the path is open; opening the new PR is on the user,
+not this draft.
+
+## Pre-closure draft (archived)
+
+The original title and PR body from before the closure are
+preserved below for reference. They are not the right shape for a
+re-fire under the curated-host rule (they would need a
+self-contained folder, not a link); kept for historical context.
+
+### PR title (archived)
 
 `Add JFWaskin/superpowers-safe (safety-hardened fork of obra/superpowers with 5-gate preflight)`
 
-## PR body
+### PR body (archived)
 
 ```markdown
 ### Adding `JFWaskin/superpowers-safe`
@@ -72,16 +202,11 @@ Repo: https://github.com/JFWaskin/superpowers-safe
 — JFWaskin
 ```
 
-## What to expect
+## After-action notes
 
-- The list is selective (9 open PRs last check). Maintainer reviews
-  most.
-- If accepted, this is the highest-leverage of the 4 candidates
-  (132k stars).
-- If declined, the maintainer may say "doesn't fit" or suggest a
-  different list. Don't push back; just move on.
-
-## After acceptance
-
-- Add the list to `docs/marketing/README.md` "Accepted on" log.
-- Don't open more PRs in the same week to this repo.
+- The acknowledgement comment draft at
+  `02-acknowledgement-draft.md` is ready for user review. Posting
+  is on the user; do not auto-post.
+- No new PR is opened under this draft. The
+  "self-contained example" path requires a user decision.
+- The pure-link variant of this PR is dead; do not re-open it.
