@@ -27,6 +27,8 @@ Each entry:
 
 ---
 
+- **2026-08-16 — docs(marketing):** awesome-llm-apps PR #1081 closed by maintainer ("no link-only README additions"). Ack posted as `JFWaskin` on issuecomment-5305628861. Branch `fork/awesome-llm-apps-closure` pushed (commits `0304cf8`, `4fdba55`). Self-contained example path researched — feasible but expensive, see `docs/marketing/awesome-list-prs/02-self-contained-research.md`. See commit `4fdba55`.
+
 ## 2026-08-13 — Upstream sync: Prime Radiant CoC + v6.3.0 release notes
 
 - **Tier:** Tier 1 (project hygiene) — staying current with upstream `obra/superpowers`
