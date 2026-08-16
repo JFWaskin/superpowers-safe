@@ -4,6 +4,8 @@ pr_url: https://github.com/Shubhamsaboo/awesome-llm-apps/pull/1081
 status: closed
 closed_on: 2026-08-16
 closed_reason: link-only README additions are declined
+researched: 2026-08-16
+research_file: 02-self-contained-research.md
 ---
 
 # PR: Shubhamsaboo/awesome-llm-apps — CLOSED
@@ -66,85 +68,70 @@ link-friendly.
 
 Shubhamsaboo offered: "If you would like to add a self-contained,
 runnable example in its own folder in this repo, please open a new
-PR." Below is a feasibility note. The user has the final call —
-this is a judgment, not a refusal.
+PR." A comprehensive research assessment of what that actually
+requires is in
+[`02-self-contained-research.md`](02-self-contained-research.md).
+The summary below is the headline; the research file is the
+detailed input.
 
-### What it would look like (concretely)
+**The prior assessment (a 50-line demo, lean against) was wrong
+in two ways.** With the actual repo requirements, the build is
+bigger (a full agentskills.io-compliant skill, not a demo) and
+the fit is better (the Agent Skills section is the exact right
+category, with `npx skills add` as the natural install path).
 
-A new folder in
-`Shubhamsaboo/awesome-llm-apps`:
+### Key facts the research established
 
-```
-awesome_llm_apps/agent_skills/superpowers_safe/
-├── README.md
-├── safety_preflight_demo.py     # ~50–100 lines
-└── requirements.txt
-```
+- The `agent_skills/` section has an **explicit contribution
+  bar**: real scripts, researched references, evidence over
+  vibes, local/private by default, tested before shipped. A
+  link-only PR satisfies none of those.
+- Required folder shape: `agent_skills/<name>/` with `SKILL.md`
+  (agentskills.io frontmatter), `README.md`, `scripts/`,
+  `references/`, plus `agent_skills/evals/<name>/test_*.py`.
+- The exemplar `SKILL.md` declares `license: Apache-2.0`. Our
+  fork is MIT — would need to dual-license the new code under
+  MIT + Apache-2.0 before landing here.
+- The "↗ external" link-only pattern that appears elsewhere in
+  the README is **not** used in the `agent_skills/` section. PR
+  #1070 (Pentest AI Agents) attempted exactly that and was
+  closed on 2026-08-09, same pattern as our PR #1081.
+- Self-contained additions do get merged: PR #1088 and PR #1095
+  were merged within 1–2 days of submission. The maintainer's
+  review cadence for substantive work is fast.
 
-- `safety_preflight_demo.py` — a minimal runnable script that
-  imports the safety-check 5-gate preflight from
-  `superpowers_safe/skills/safety_check/` and runs the gates
-  against a sample destructive command (e.g. an out-of-cwd
-  `rm -rf` and a sudo invocation). Demonstrates the gate output
-  (which gate fired, what it blocked, what the user prompt would
-  be) without requiring the full `obra/superpowers` skill runtime
-  to be installed. Possibly stand on its own by inlining the
-  gate logic into the script, with attribution.
-- `README.md` — explains the pattern (5-gate preflight,
-  defense-in-depth with `nono.sh`, cross-runtime packaging),
-  with a "How to run" section and a pointer back to
-  `JFWaskin/superpowers-safe` for the full plugin.
-- `requirements.txt` — empty or near-empty (the safety-check
-  gates are stdlib + subprocess, no third-party deps).
+### Revised cost/benefit (full numbers in the research file)
 
-### Cost
+- **Cost:** 2–3 days of careful work, not ½ day. SKILL.md +
+  references are the heaviest items. Plus 1 round of review
+  iteration (~1–3 days). Plus an ongoing sync burden — every
+  safety-check update in `superpowers-safe` would need a
+  corresponding sync to the awesome-llm-apps copy, or the eval
+  will rot.
+- **Benefit:** A real placement in the **exact** right section
+  (Agent Skills), with `npx skills add` as the natural install
+  path, 132k stars, the right audience (Claude Code / Codex /
+  Cursor users), and "actually runs + has an eval" credibility.
 
-- ~½ day of real work: 1–2 hours to write the demo script and
-  README, 1–2 hours to iterate on review feedback from
-  @Shubhamsaboo.
-- Ongoing maintenance burden: Shubhamsaboo's repo is fast-moving
-  (high traffic, frequent PRs). A PR in their tree can rot in
-  weeks if their structure changes, their example categories
-  reorganize, or their safety-themed section moves.
-- Review attention spent that does not directly improve
-  `superpowers-safe` itself.
+### Revised recommendation
 
-### Benefit
+**Feasible but expensive.** Three options for the user:
 
-- A curated placement in one of the most-trafficked LLM-app
-  awesome lists (132k stars), with "actually runs" credibility
-  rather than just a link.
-- A demonstration artifact that could be reused in
-  `JFWaskin/superpowers-safe/docs/examples/` and on the x-thread /
-  show-hn drafts as a concrete runnable demo.
+1. **Skip.** The placement isn't worth a multi-day build +
+   ongoing sync. Reallocate to other targets (e2b-dev,
+   hesreallyhim, VoltAgent). The conservative move.
+2. **Pursue.** Commit to the 2–3 day build + the maintenance
+   burden. Build the skill locally first; the user reviews and
+   then opens the new PR.
+3. **Partial.** Ship the `scripts/preflight.py` standalone
+   implementation inside
+   `JFWaskin/superpowers-safe/docs/examples/` (or
+   `examples/`), where maintenance is zero. Skip the
+   awesome-llm-apps PR. This gets 80% of the credibility benefit
+   at 20% of the cost.
 
-### Recommendation
-
-**Lean against** pursuing this path. The "self-contained example
-in someone else's awesome list" is a strange artifact:
-`awesome-llm-apps` is a showcase of LLM apps, and a safety-check
-preflight is not really an LLM app. It is a safety layer for an
-LLM-app development workflow. A demo of the safety layer is more
-naturally at home in `JFWaskin/superpowers-safe`'s own `docs/` or
-`examples/` folder, where the maintenance cost is zero and the
-audience (existing and prospective users of the fork) is the
-right one.
-
-Reallocating the ~½ day to other awesome-list targets is
-strictly better use of attention:
-
-- `e2b-dev/awesome-ai-agents` (unblock the FIRE NOW PR if it is
-  still open) — pure-link index, no curated-host rule.
-- `VoltAgent/awesome-claude-code-subagents` follow-up — only
-  if a real subagent refactor of safety-check is done (separate
-  work; see that draft's "If you want to fit anyway" section).
-- `hesreallyhim/awesome-claude-code` — eligible from
-  **2026-08-22** or 100 stars, whichever first.
-
-This is a judgment call, not a refusal. If the user wants the
-132k-star placement and is willing to absorb the maintenance
-burden, the path is open; opening the new PR is on the user,
-not this draft.
+The user's call. The research is the input; the decision is not
+mine. Opening any new PR is on the user, not on this draft.
 
 ## Pre-closure draft (archived)
 
