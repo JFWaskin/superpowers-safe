@@ -5,6 +5,82 @@
 > rigor-checklist tiers track the strategic arc; this file is the
 > day-to-day record of what landed.
 
+## 2026-08-18 — Upstream PR #2171: DeepSeek Harness (dsh) support
+
+- **Tier:** Tier 1.4 (upstream contribution) — the strategic goal of
+  landing dsh support on `obra/superpowers` so the fork does not have
+  to maintain a separate plugin surface for it.
+- **What shipped:**
+  - **`fork/dsh-upstream-pr` branch on `JFWaskin/superpowers-pr-fork`** —
+    13 files, +1370/-0 against `obra/superpowers:dev`. Opened as
+    [PR #2171](https://github.com/obra/superpowers/pull/2171) on
+    2026-08-18. Files: `.dsh/cordis.patch.yml`,
+    `.dsh/plugins/superpowers.js`, `docs/README.dsh.md`,
+    `docs/dsh-acceptance-2026-08-18.md`, the dsh tool mapping under
+    `skills/using-superpowers/references/dsh-tools.md`, the
+    `tests/dsh/{run-tests.sh,test-dsh-install.sh,test-dsh-plugin.mjs}`
+    suite (13 unit tests + 1 install check, all passing), a `dsh.bundle`
+    field in `package.json`, a DeepSeek Harness section in `README.md`,
+    a `/.dsh/` exclude in `scripts/sync-to-codex-plugin.sh`, and a
+    one-line pointer to the new reference in
+    `skills/using-superpowers/SKILL.md`. PR body in
+    `pr-body-dsh.md`.
+  - **Cron `watch-dsh-upstream-pr`** (cron_id
+    `795ce524-316a-49cd-a5c2-27594de020df`) — every 2 hours on
+    Asia/Shanghai, watches PR #2171 and the live vehicle #2144, drafts
+    responses for human review, never auto-posts.
+- **Why:** obra redirected DeepSeek support discussion to PR #2144 and
+  closed #2152 ("the decision now happens on that PR"). The fork has
+  the `fork/deepseek-harness-bridge/` subpackage (cordis plugin,
+  hook patches, eval scenarios) but that shape is fork-specific and
+  not directly upstreamable. A separate PR that targets `dev` and
+  matches #2144's bar (Cordis plugin + `dsh.bundle` field + install
+  docs + adversarial test surface + full acceptance transcript) gives
+  obra a sibling to consider and gives the fork a clean upstream
+  path for dsh support that does not require carrying a parallel
+  plugin surface.
+- **Differences from #2144 (the live vehicle):** verbose JSDoc in the
+  plugin source, a defensive `isForkOnly()` filter
+  (path-fragment `/fork/` + description-prefix `safety-check`) that
+  the unit tests pin with two extra cases, an isolated acceptance
+  environment (redirected `DSH_HOME` + `DEEPSEEK_API_KEY` env so the
+  run is one-for-one comparable to the no-plugin baseline), and the
+  transcript at `docs/dsh-acceptance-2026-08-18.md` rather than inline
+  in the PR body. Author `JFWaskin <waskin@users.noreply.github.com>`;
+  no AI co-author on the commit, in the PR body, or in any file.
+
+### Issues found and fixed during this pass
+
+1. **`superpowers-safe` is not a GitHub-recognized fork of
+   `obra/superpowers`.** The first `gh pr create` against
+   `obra/superpowers:dev` returned `No commits between obra:dev and
+   JFWaskin:fork/dsh-upstream-pr`. Investigation: the fork lives at
+   `JFWaskin/superpowers-pr-fork` (which GitHub *does* recognize as a
+   fork). The `JFWaskin/superpowers-safe` repo's `parent` field is
+   empty — likely the original fork relationship was broken when the
+   repo was renamed or the visibility changed. Fix: push the branch
+   to `pr-fork` and open the PR from there. The branch still lives
+   in the `superpowers-safe` checkout so the fork keeps a local
+   record; the upstream-facing copy is on `pr-fork`. Future upstream
+   PRs should target `pr-fork` directly.
+2. **The local `~/.dsh/skills/safety-check` skill dominated the
+   session catalog on the local machine.** The first smoke check
+   (without isolation) showed the first tool call as `skill("safety-check")`,
+   not `skill("brainstorming")` — that is the fork's user-level
+   safety layer firing, not a plugin failure. Fix: redirect `DSH_HOME`
+   to a scratch directory for the transcript, set
+   `DEEPSEEK_API_KEY` explicitly (the redirected home does not
+   inherit the credentials file), and re-run. With isolation, the
+   catalog is the 14 plugin-registered skills only, and the first
+   action is `skill("brainstorming")` as expected. Documented in
+   the acceptance file's "Notes on the environment" section.
+3. **The brief's suggested path `docs/evals/dsh-acceptance-*.md`
+   matched `.gitignore`'s `evals/` rule** (substring match catches
+   any path containing `evals/`, including `docs/evals/`). Moved
+   the transcript to `docs/dsh-acceptance-2026-08-18.md` (sibling of
+   `docs/README.dsh.md`) and removed the empty `docs/evals/`
+   directory. The PR diff is unchanged.
+
 ## How to use this file
 
 - When starting work, check the latest entry to see where the cadence
